@@ -1,0 +1,7 @@
+# Versión 2
+modo=backup
+carpeta_origen=C:/Datos/Proyecto
+carpeta_destino=E:/Backups
+compresion=zip
+encriptado=true
+retencion=30

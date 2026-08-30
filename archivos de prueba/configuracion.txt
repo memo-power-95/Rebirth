@@ -1,0 +1,7 @@
+# Configuración de ejemplo
+modo=backup
+fuente=C:\Datos\Proyecto
+destino=D:\Backups
+comprimir=true
+cifrar=false
+retencion=30

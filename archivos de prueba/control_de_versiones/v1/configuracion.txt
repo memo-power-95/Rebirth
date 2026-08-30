@@ -1,0 +1,5 @@
+# Versión 1
+modo=backup
+carpeta_origen=C:/Datos/Proyecto
+carpeta_destino=D:/Backups
+compresion=zip

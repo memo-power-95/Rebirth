@@ -1,0 +1,2 @@
+Archivo de prueba 3
+Este archivo valida carpetas anidadas.

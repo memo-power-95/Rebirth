@@ -1,0 +1,13 @@
+{
+  "nombre": "Proyecto Demo",
+  "version": "1.0.0",
+  "modo": "backup",
+  "ruta_origen": "C:/Datos/Proyecto",
+  "ruta_destino": "D:/Backups",
+  "archivos": [
+    "configuracion.txt",
+    "configuracion.xml",
+    "configuracion.csv",
+    "notas.txt"
+  ]
+}

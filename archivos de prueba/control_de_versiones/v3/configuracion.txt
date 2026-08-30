@@ -1,0 +1,9 @@
+# Versión 3
+modo=backup_incremental
+carpeta_origen=C:/Datos/Proyecto
+carpeta_destino=E:/Backups
+compresion=7z
+encriptado=true
+retencion=90
+cifrado=AES256
+modo_programado=true

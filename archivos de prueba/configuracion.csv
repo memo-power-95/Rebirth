@@ -1,0 +1,6 @@
+nombre,tipo,valor
+modo,backup,manual
+origen,C:/Datos/Proyecto,
+Destino,D:/Backups,
+comprimir,boolean,true
+cifrar,boolean,false

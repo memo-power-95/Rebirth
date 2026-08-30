@@ -1,0 +1,2 @@
+Archivo dentro de subcarpeta para probar recursividad.
+Este contenido podría ser detectado por un proceso de backup.

@@ -1,0 +1,14 @@
+v1.0.0 - Versión inicial
+- Backup básico
+- Restauración simple
+
+v2.0.0 - Mejoras
+- Añadida verificación
+- Añadida compresión
+- Opción de encriptado
+
+v3.0.0 - Evolución
+- Backup incremental
+- Programación automatica
+- Soporte multi-plataforma
+- Retención ampliada

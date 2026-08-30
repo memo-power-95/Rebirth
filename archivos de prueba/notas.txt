@@ -1,0 +1,8 @@
+Este archivo sirve para verificar que el software puede recoger contenido de texto plano.
+Incluye líneas con varios tipos de datos:
+- nombres
+- rutas
+- fechas
+- valores
+
+Fecha de ejemplo: 2026-08-29

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuracion>
+  <modo>backup</modo>
+  <origen>C:/Datos/Proyecto</origen>
+  <destino>D:/Backups</destino>
+  <comprimir>true</comprimir>
+  <cifrar>false</cifrar>
+  <retencion>30</retencion>
+</configuracion>

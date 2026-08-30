@@ -1,0 +1,2 @@
+Archivo de prueba 1
+Contenido simple para validar lectura de texto.

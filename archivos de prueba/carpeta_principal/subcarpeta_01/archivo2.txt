@@ -1,0 +1,2 @@
+Archivo de prueba 2
+Se encuentra en una subcarpeta.

@@ -1,0 +1,5 @@
+{
+  "version": "2.0.0",
+  "nombre": "Rebirth",
+  "funciones": ["backup", "restauracion", "verificacion", "compresion"]
+}
