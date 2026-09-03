@@ -1,4 +1,4 @@
-('C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Proyectos_LG\\backup_manager\\build\\rebith\\PYZ-00.pyz',
+('C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Rebirth\\backup_manager\\build\\rebith\\PYZ-00.pyz',
  [('__future__',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\Lib\\__future__.py',
@@ -40,7 +40,7 @@
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\Lib\\ast.py',
    'PYMODULE'),
   ('backup_engine',
-   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Proyectos_LG\\backup_manager\\backup_engine.py',
+   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Rebirth\\backup_manager\\backup_engine.py',
    'PYMODULE'),
   ('base64',
    'C:\\Program '
@@ -83,7 +83,7 @@
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\Lib\\csv.py',
    'PYMODULE'),
   ('database',
-   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Proyectos_LG\\backup_manager\\database.py',
+   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Rebirth\\backup_manager\\database.py',
    'PYMODULE'),
   ('dataclasses',
    'C:\\Program '
@@ -199,14 +199,14 @@
    'PYMODULE'),
   ('gui', '-', 'PYMODULE'),
   ('gui.main_window',
-   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Proyectos_LG\\backup_manager\\gui\\main_window.py',
+   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Rebirth\\backup_manager\\gui\\main_window.py',
    'PYMODULE'),
   ('gzip',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\Lib\\gzip.py',
    'PYMODULE'),
   ('hasher',
-   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Proyectos_LG\\backup_manager\\hasher.py',
+   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Rebirth\\backup_manager\\hasher.py',
    'PYMODULE'),
   ('hashlib',
    'C:\\Program '
@@ -365,7 +365,7 @@
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\Lib\\random.py',
    'PYMODULE'),
   ('restore_engine',
-   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Proyectos_LG\\backup_manager\\restore_engine.py',
+   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Rebirth\\backup_manager\\restore_engine.py',
    'PYMODULE'),
   ('selectors',
    'C:\\Program '
@@ -488,7 +488,7 @@
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.12_3.12.2800.0_x64__qbz5n2kfra8p0\\Lib\\urllib\\parse.py',
    'PYMODULE'),
   ('verifier',
-   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Proyectos_LG\\backup_manager\\verifier.py',
+   'C:\\Users\\elpro\\OneDrive\\Documentos\\GitHub\\Rebirth\\backup_manager\\verifier.py',
    'PYMODULE'),
   ('zipfile',
    'C:\\Program '
