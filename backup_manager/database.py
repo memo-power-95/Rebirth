@@ -5,6 +5,8 @@ Acceso a la base de datos SQLite. Guarda:
  - snapshots: cada vez que se hizo un backup de un target
  - files: catálogo de contenido único (deduplicado por hash)
  - file_versions: qué archivo (ruta relativa) tenía qué hash en qué snapshot
+ 
+MEJORADO: Ahora file_versions incluye is_dynamic para clasificar archivos críticos vs dinámicos.
 """
 
 import hashlib
@@ -22,8 +24,10 @@ class Database:
         # SQLite connections are normally bound to the thread that created them.
         # The backup app opens the DB in the main thread and reads/writes it in
         # worker threads, so we allow reuse across threads and serialize access.
-        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        self.conn = sqlite3.connect(db_path, check_same_thread=False, timeout=30.0)
         self.conn.execute("PRAGMA foreign_keys = ON")
+        self.conn.execute("PRAGMA journal_mode = WAL")  # Write-Ahead Logging para mejor concurrencia
+        self.conn.execute("PRAGMA synchronous = NORMAL")  # Balance entre seguridad y velocidad
         self.conn.row_factory = sqlite3.Row
         self._create_tables()
         self.ensure_default_admin()
@@ -60,6 +64,7 @@ class Database:
             relative_path TEXT NOT NULL,
             hash TEXT NOT NULL,
             mtime REAL NOT NULL,
+            is_dynamic INTEGER NOT NULL DEFAULT 0,
             FOREIGN KEY (snapshot_id) REFERENCES snapshots(id) ON DELETE CASCADE,
             FOREIGN KEY (hash) REFERENCES files(hash)
         );
@@ -86,6 +91,14 @@ class Database:
             FOREIGN KEY (user_id) REFERENCES users(id)
         );
         """)
+        
+        # Migración: Agregar columna is_dynamic si no existe
+        try:
+            cur.execute("ALTER TABLE file_versions ADD COLUMN is_dynamic INTEGER NOT NULL DEFAULT 0")
+        except sqlite3.OperationalError:
+            # La columna ya existe, no hacer nada
+            pass
+        
         self.conn.commit()
 
     @staticmethod
@@ -326,23 +339,40 @@ class Database:
             self.conn.commit()
 
     # ---------- file_versions ----------
-    def add_file_version(self, snapshot_id, relative_path, file_hash, mtime):
+    def add_file_version(self, snapshot_id, relative_path, file_hash, mtime, is_dynamic=False):
         with self._lock:
             self.conn.execute(
-                "INSERT INTO file_versions (snapshot_id, relative_path, hash, mtime) VALUES (?,?,?,?)",
-                (snapshot_id, relative_path, file_hash, mtime),
+                "INSERT INTO file_versions (snapshot_id, relative_path, hash, mtime, is_dynamic) VALUES (?,?,?,?,?)",
+                (snapshot_id, relative_path, file_hash, mtime, int(bool(is_dynamic))),
             )
             self.conn.commit()
 
-    def get_file_versions(self, snapshot_id):
+    def get_file_versions(self, snapshot_id, only_critical=False):
         with self._lock:
-            return self.conn.execute(
-                """SELECT fv.relative_path, fv.hash, fv.mtime, f.size, f.archive_location
+            query = """SELECT fv.relative_path, fv.hash, fv.mtime, f.size, f.archive_location, fv.is_dynamic
+                       FROM file_versions fv
+                       JOIN files f ON f.hash = fv.hash
+                       WHERE fv.snapshot_id=?"""
+            if only_critical:
+                query += " AND fv.is_dynamic = 0"
+            
+            return self.conn.execute(query, (snapshot_id,)).fetchall()
+
+    def get_file_versions_by_type(self, snapshot_id):
+        """Devuelve dict con 'critical' y 'dynamic' listas de file_versions"""
+        with self._lock:
+            versions = self.conn.execute(
+                """SELECT fv.relative_path, fv.hash, fv.mtime, f.size, f.archive_location, fv.is_dynamic
                    FROM file_versions fv
                    JOIN files f ON f.hash = fv.hash
                    WHERE fv.snapshot_id=?""",
-                (snapshot_id,),
+                (snapshot_id,)
             ).fetchall()
+            
+            critical = [v for v in versions if not v["is_dynamic"]]
+            dynamic = [v for v in versions if v["is_dynamic"]]
+            
+            return {"critical": critical, "dynamic": dynamic}
 
     def close(self):
         self.conn.close()
