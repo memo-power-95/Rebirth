@@ -320,7 +320,7 @@ class MainWindow(tk.Tk):
         target = self.db.get_target(self.schedule.get("target_id"))
         if target is None:
             return
-        self.backup_tab.start_backup(target["id"], "Backup programado")
+        self.backup_tab.start_backup(target["id"], "Backup programado", self.schedule.get("exclude_patterns", []))
         days = 7 if self.schedule["frequency"] == "weekly" else 1
         self.schedule["next_run"] = (datetime.now() + timedelta(days=days)).isoformat(timespec="seconds")
         self.save_schedule(self.schedule)
@@ -371,6 +371,12 @@ class BackupTab(ttk.Frame):
         self.status_var = tk.StringVar(value="")
         ttk.Label(self, textvariable=self.status_var).pack(anchor="w")
 
+        ttk.Label(self, text="Excluir patrones (opcional, separados por comas):").pack(anchor="w", pady=(8, 0))
+        saved_patterns = self.app.schedule.get("exclude_patterns", [])
+        self.exclude_var = tk.StringVar(value=", ".join(saved_patterns))
+        ttk.Entry(self, textvariable=self.exclude_var).pack(fill="x")
+        ttk.Label(self, text="Ejemplo: *.log, *.tmp, cache/*", foreground="gray").pack(anchor="w")
+
         self.selected_path = None
         self.is_folder = False
         self.last_target_id = None
@@ -407,9 +413,10 @@ class BackupTab(ttk.Frame):
         name = self.selected_path.name
         target_id = self.app.db.create_target(name, self.selected_path, self.is_folder)
         self.last_target_id = target_id
-        self.start_backup(target_id, self.note_entry.get())
+        exclude_patterns = self._get_exclude_patterns()
+        self.start_backup(target_id, self.note_entry.get(), exclude_patterns)
 
-    def start_backup(self, target_id, note=""):
+    def start_backup(self, target_id, note="", exclude_patterns=None):
         self.app.cancel_event.clear()
         self.cancel_button.configure(state="normal")
         self.status_var.set("Creando backup...")
@@ -421,7 +428,10 @@ class BackupTab(ttk.Frame):
 
             snapshot_id = None
             try:
-                snapshot_id = self.app.backup_engine.backup_target(target_id, note, progress_cb, self.app.cancel_event)
+                snapshot_id = self.app.backup_engine.backup_target(
+                    target_id, note, progress_cb, self.app.cancel_event,
+                    exclude_patterns=exclude_patterns or [],
+                )
                 archive_results = self.app.verifier.verify_snapshot_archive(snapshot_id, cancel_event=self.app.cancel_event)
                 corrupt = sum(result["status"] == CORRUPTO for result in archive_results)
                 status = "Backup correcto" if corrupt == 0 else f"Backup con errores: {corrupt} archivo(s) corrupto(s)"
@@ -449,8 +459,12 @@ class BackupTab(ttk.Frame):
         days = 7 if frequency == "weekly" else 1
         self.app.save_schedule({"target_id": self.last_target_id, "frequency": frequency,
                                 "next_run": (datetime.now() + timedelta(days=days)).isoformat(timespec="seconds"),
-                                "run_on_startup": self.run_startup_var.get()})
+                                "run_on_startup": self.run_startup_var.get(),
+                                "exclude_patterns": self._get_exclude_patterns()})
         self.status_var.set("Programacion guardada")
+
+    def _get_exclude_patterns(self):
+        return [pattern.strip() for pattern in self.exclude_var.get().split(",") if pattern.strip()]
 
 
 class HistoryTab(ttk.Frame):
@@ -591,7 +605,10 @@ class VerifyTab(ttk.Frame):
         self.tree.tag_configure("falta", foreground="#7b1fa2", background="#f3e5f5")
         self.tree.pack(fill="both", expand=True, pady=10)
 
-        ttk.Button(self, text="Reparar faltantes/corruptos", command=self.repair_selected).pack()
+        repair_buttons = ttk.Frame(self)
+        repair_buttons.pack(fill="x")
+        ttk.Button(repair_buttons, text="Reparar seleccionados", command=self.repair_selected).pack(side="left")
+        ttk.Button(repair_buttons, text="Reparar todos", command=self.repair_all).pack(side="left", padx=8)
 
         self._targets = []
         self._snapshots = []
@@ -661,8 +678,14 @@ class VerifyTab(ttk.Frame):
                              tags=(tags.get(status, ""),))
 
     def repair_selected(self):
+        self._repair_files(use_selection=True)
+
+    def repair_all(self):
+        self._repair_files(use_selection=False)
+
+    def _repair_files(self, use_selection):
         if self.last_snapshot_id is None:
-            messagebox.showwarning("Sin verificacion", "Verifica un snapshot antes de reparar archivos faltantes o corruptos.")
+            messagebox.showwarning("Sin verificacion", "Verifica un snapshot antes de reparar archivos.")
             return
 
         target_id = self._current_target_id()
@@ -670,10 +693,16 @@ class VerifyTab(ttk.Frame):
         dest_dir = target["source_path"] if target["is_folder"] else str(Path(target["source_path"]).parent)
 
         candidates = []
-        if self.tree.selection():
+        if use_selection and self.tree.selection():
             candidates = [self.tree.item(item, "text") for item in self.tree.selection()]
-            candidates = [rel_path for rel_path in candidates if any(result["relative_path"] == rel_path and result["status"] in (FALTA, CORRUPTO) for result in self.last_results)]
+            candidates = [rel_path for rel_path in candidates if any(
+                result["relative_path"] == rel_path and result["status"] in (FALTA, MODIFICADO, CORRUPTO)
+                for result in self.last_results
+            )]
         else:
+            if use_selection:
+                messagebox.showwarning("Nada seleccionado", "Selecciona uno o más archivos faltantes o corruptos.")
+                return
             candidates = [result["relative_path"] for result in self.last_results if result["status"] in (FALTA, CORRUPTO)]
 
         if not candidates:

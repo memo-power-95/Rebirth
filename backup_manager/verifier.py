@@ -6,6 +6,7 @@ el tamaño o la fecha de modificación cambiaron (rápido).
 """
 
 import zlib
+import hashlib
 from pathlib import Path
 from hasher import hash_file
 
@@ -48,13 +49,14 @@ class Verifier:
                 results.append({"relative_path": rel_path, "status": OK})
                 continue
 
-            # Si difieren, sí calculamos el hash real para saber si es
-            # un cambio legítimo (MODIFICADO) o corrupción real (CORRUPTO)
+            # Una diferencia en el archivo original es un cambio del usuario,
+            # no corrupción del backup. La corrupción del archivo comprimido
+            # se comprueba en verify_snapshot_archive().
             real_hash = hash_file(real_path)
             if real_hash == row["hash"]:
                 results.append({"relative_path": rel_path, "status": OK})
             else:
-                results.append({"relative_path": rel_path, "status": CORRUPTO})
+                results.append({"relative_path": rel_path, "status": MODIFICADO})
 
         return results
 
@@ -70,8 +72,8 @@ class Verifier:
                 progress_callback(i, total, row["relative_path"])
             try:
                 with open(row["archive_location"], "rb") as archive:
-                    zlib.decompress(archive.read())
-                status = OK
+                    data = zlib.decompress(archive.read())
+                status = OK if hashlib.sha256(data).hexdigest() == row["hash"] else CORRUPTO
             except (OSError, zlib.error):
                 status = CORRUPTO
             results.append({"relative_path": row["relative_path"], "status": status})

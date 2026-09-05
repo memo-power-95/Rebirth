@@ -1,0 +1,26 @@
+Instala PyInstaller:
+
+py -m pip install pyinstaller
+
+Luego genera el .exe desde la carpeta backup_manager:
+
+cd "c:\Users\Administrator\Documents\GitHub\Rebirth\backup_manager"
+pyinstaller --clean --noconfirm --onefile --windowed --name rebith main.py
+
+Resultado esperado:
+
+c:\Users\Administrator\Documents\GitHub\Rebirth\backup_manager\dist\rebith.exe
+
+Si quieres usar el ejecutable con otro nombre:
+
+pyinstaller --clean --noconfirm --onefile --windowed --name rebith_prod main.py
+
+Resultado esperado:
+
+c:\Users\Administrator\Documents\GitHub\Rebirth\backup_manager\dist\rebith_prod.exe
+
+Importante:
+- No se usa --icon, así que el ejecutable no lleva logo personalizado.
+- Es un exe de ventana, no consola.
+- Si quieres incluir un icono personalizado, añade:
+  --icon "ruta\a\tu\icono.ico"
