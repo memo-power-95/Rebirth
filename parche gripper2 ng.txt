@@ -1,0 +1,152 @@
+========================================================
+PARCHE: GRIPPER 2 -> NG
+Archivo: GantryForm.cs
+Fecha: 09/09/2026
+========================================================
+
+Objetivo: que la pieza del gripper 2 no se intente
+colocar en el pallet, y se mande al rack NG usando la
+misma secuencia que usa el flujo normal de NG.
+
+Ubicacion: metodo flowChart74_FlowRun
+           (comentario "//R1 Goto tray assemb Bpositon")
+           alrededor de la linea 5797.
+
+
+--------------------------------------------------------
+ANTES DE PEGAR
+--------------------------------------------------------
+1. Borrar cualquier parche anterior en este metodo,
+   sobre todo el que hacia "return FCResultType.CASE1;"
+   Ese daba el error 1004.
+
+2. Si declaraste "int ngPatchIndex = 1;" cerca de la
+   linea 57, ya no hace falta. Borrarlo.
+
+
+--------------------------------------------------------
+CODIGO
+Pegar justo despues de la llave de apertura del metodo,
+antes de la linea "string[] pos = GetDataByAnnotation..."
+--------------------------------------------------------
+
+// ---- PARCHE TEMPORAL: gripper 2 va a NG ----
+if (gripperIndex == 2)
+{
+    bool colocada = false;
+
+    for (int intento = 1; intento <= 18 && !colocada; intento++)
+    {
+        // 1) elegir primer buffer libre
+        string libre = null;
+        for (int b = 1; b <= 18; b++)
+        {
+            if (!GetRecipeValue("RSet", "NGbuffer" + b))
+            {
+                libre = string.Format("{0:d3}", b);
+                break;
+            }
+        }
+        if (libre == null)
+        {
+            MiddleLayer.LogF.AddLog(LogType.NGProduct,
+                "Rack NG lleno - no hay buffer libre", true);
+            return FCResultType.IDLE;
+        }
+        SysPara.ngPos = libre;
+
+        // 2) mover a posicion NG para inspeccion
+        if (!Robot.WriteToEpson("017", SysPara.ngPos, "FF", 20000))
+            return FCResultType.IDLE;
+
+        // 3) camara: verificar si el slot ya tiene pieza
+        double exposure = GetSettingValue("MSet", "NGCCDCheckExpTime");
+        if (!H1_NGCCDCheck.TakePicture(exposure))
+            return FCResultType.IDLE;
+        H1_NGCCDCheck.RunTB();
+
+        if (Convert.ToBoolean(H1_NGCCDCheck.TB.Outputs["IsHaveProduct"].Value))
+        {
+            // ocupado: marcar y probar el siguiente
+            DataTable dtng = RecipeData.Tables["RSet"];
+            dtng.Rows[0]["NGbuffer" + Convert.ToInt32(SysPara.ngPos)] = true;
+            dtng.AcceptChanges();
+            this.WriteRecipeData(string.Format("{0}\\{1}.xml",
+                SysPara.RecipeDataDirectory, SysPara.RecipeName));
+            continue;
+        }
+
+        // 4) libre: soltar la pieza
+        if (Robot.WriteToEpson("016", SysPara.ngPos,
+            string.Format("{0:d2}", gripperIndex), 20000))
+        {
+            MiddleLayer.LogF.AddLog(LogType.NGProduct,
+                "Gripper2 deshabilitado - pieza a NG " + SysPara.ngPos, true);
+            colocada = true;
+        }
+        else
+        {
+            return FCResultType.IDLE;
+        }
+    }
+
+    RunTM.Restart();
+    return FCResultType.NEXT;
+}
+// ---- FIN PARCHE ----
+
+
+--------------------------------------------------------
+DE DONDE SALIO CADA PARTE
+--------------------------------------------------------
+Comando "017" (mover a NG e inspeccionar) ... linea 6512
+Comando "016" (soltar en NG) ................ linea 6529, flowChart91
+Seleccion de buffer libre ................... flowChart65, linea 5323
+Chequeo de camara IsHaveProduct ............. flowChart88, linea 6263
+Marcado de buffer ocupado ................... linea 6350
+
+
+--------------------------------------------------------
+DOS COSAS SIN VERIFICAR
+--------------------------------------------------------
+1. Se asume que GetRecipeValue("RSet", "NGbuffer" + b)
+   funciona armando el nombre. Si el metodo espera un
+   nombre literal, truena en ejecucion. En ese caso hay
+   que volver al switch largo del programa original
+   (ver lineas 6289-6348 como modelo).
+
+2. El bloque corre todo dentro de un solo nodo, con dos
+   WriteToEpson de 20 s y una captura de camara. El flujo
+   original reparte esto en varios nodos. Si algo se
+   traba, el nodo se cuelga en lugar de devolver IDLE.
+
+
+--------------------------------------------------------
+PRUEBAS ANTES DE PRODUCCION
+--------------------------------------------------------
+[ ] Dry cycle con rack NG vacio
+[ ] Confirmar en log: "pieza a NG 001"
+[ ] Ocupar un slot a proposito y confirmar que brinca
+    al siguiente
+[ ] Vigilar que no lance excepcion
+
+
+--------------------------------------------------------
+RECORDATORIO
+--------------------------------------------------------
+Esto es un parche temporal. Tira 1 de cada 3 piezas a NG
+y no arregla la causa.
+
+La causa real es que la presion del gripper 2 no cae
+despues de soltar. Evidencia recopilada:
+  - Grafica: gripper 1 y 3 bajan a 0, el 2 se queda alto
+  - Tabla: gripper 2 marca NG con 62.75
+           gripper 3 marca OK con 62.70
+  - Grippers 1 y 3 marcan OK incluso con presion 0
+
+El umbral y la logica viven en el SPEL del Epson, no en
+este C#. Es tema del proveedor.
+
+========================================================
+FIN
+========================================================
