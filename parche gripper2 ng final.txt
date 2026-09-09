@@ -1,0 +1,160 @@
+========================================================
+PARCHE: GRIPPER 2 -> NG   (version final)
+Archivo: GantryForm.cs
+Metodo:  flowChart74_FlowRun
+Fecha:   09/09/2026
+========================================================
+
+Buscar con Ctrl+F "flowChart74_FlowRun".
+El comentario arriba del metodo dice:
+    //R1 Goto tray assemb Bpositon
+
+Pegar el bloque justo despues de la llave de apertura
+del metodo, antes de la linea:
+    string[] pos = GetDataByAnnotation(...);
+
+Borrar cualquier parche anterior que tengas en este
+metodo antes de pegar este.
+
+
+--------------------------------------------------------
+CODIGO
+--------------------------------------------------------
+
+// ---- inicio parche ----
+if (gripperIndex == 2)
+{
+    if (!GetRecipeValue("RSet", "NGbuffer1")) SysPara.ngPos = "001";
+    else if (!GetRecipeValue("RSet", "NGbuffer2")) SysPara.ngPos = "002";
+    else if (!GetRecipeValue("RSet", "NGbuffer3")) SysPara.ngPos = "003";
+    else if (!GetRecipeValue("RSet", "NGbuffer4")) SysPara.ngPos = "004";
+    else if (!GetRecipeValue("RSet", "NGbuffer5")) SysPara.ngPos = "005";
+    else if (!GetRecipeValue("RSet", "NGbuffer6")) SysPara.ngPos = "006";
+    else if (!GetRecipeValue("RSet", "NGbuffer7")) SysPara.ngPos = "007";
+    else if (!GetRecipeValue("RSet", "NGbuffer8")) SysPara.ngPos = "008";
+    else if (!GetRecipeValue("RSet", "NGbuffer9")) SysPara.ngPos = "009";
+    else if (!GetRecipeValue("RSet", "NGbuffer10")) SysPara.ngPos = "010";
+    else if (!GetRecipeValue("RSet", "NGbuffer11")) SysPara.ngPos = "011";
+    else if (!GetRecipeValue("RSet", "NGbuffer12")) SysPara.ngPos = "012";
+    else if (!GetRecipeValue("RSet", "NGbuffer13")) SysPara.ngPos = "013";
+    else if (!GetRecipeValue("RSet", "NGbuffer14")) SysPara.ngPos = "014";
+    else if (!GetRecipeValue("RSet", "NGbuffer15")) SysPara.ngPos = "015";
+    else if (!GetRecipeValue("RSet", "NGbuffer16")) SysPara.ngPos = "016";
+    else if (!GetRecipeValue("RSet", "NGbuffer17")) SysPara.ngPos = "017";
+    else if (!GetRecipeValue("RSet", "NGbuffer18")) SysPara.ngPos = "018";
+    else
+    {
+        MiddleLayer.LogF.AddLog(LogType.NGProduct,
+            "Rack NG lleno - vaciar y dar NG Reset", true);
+        return FCResultType.IDLE;
+    }
+
+    if (!Robot.WriteToEpson("017", SysPara.ngPos, "FF", 20000))
+        return FCResultType.IDLE;
+
+    if (Robot.WriteToEpson("016", SysPara.ngPos,
+        string.Format("{0:d2}", gripperIndex), 20000))
+    {
+        DataTable dtng = RecipeData.Tables["RSet"];
+        dtng.Rows[0]["NGbuffer" + Convert.ToInt32(SysPara.ngPos)] = true;
+        dtng.AcceptChanges();
+        this.WriteRecipeData(string.Format("{0}\\{1}.xml",
+            SysPara.RecipeDataDirectory, SysPara.RecipeName));
+
+        MiddleLayer.LogF.AddLog(LogType.NGProduct,
+            "Gripper2 deshabilitado - pieza a NG " + SysPara.ngPos, true);
+        RunTM.Restart();
+        return FCResultType.NEXT;
+    }
+    else
+    {
+        return FCResultType.IDLE;
+    }
+}
+// ---- fin parche ----
+
+
+--------------------------------------------------------
+CUIDADO CON LOS NOMBRES
+--------------------------------------------------------
+Deben escribirse EXACTAMENTE asi, respetando mayusculas:
+
+    "RSet"       <- S mayuscula   (NO "Rset")
+    "NGbuffer1"  <- b minuscula   (NO "NGBuffer1")
+
+Si no coinciden con las columnas de la tabla,
+GetRecipeValue no encuentra nada y siempre cae en 001.
+
+Revisar tambien que no haya numeros repetidos.
+Debe ir 1,2,3,4 ... 18 sin saltarse ni repetir.
+
+
+--------------------------------------------------------
+QUE HACE CADA PARTE
+--------------------------------------------------------
+Cadena de if     Busca el primer NG buffer libre.
+                 Los mismos checkboxes de la pantalla
+                 "NG buffer" del HMI.
+
+Comando "017"    Mueve el robot a la zona NG.
+                 Copiado de la linea 6512.
+                 SIN ESTO EL ROBOT NO SUELTA.
+
+Comando "016"    Suelta la pieza en el slot.
+                 Copiado de flowChart91, linea 6529.
+
+Marcado          Pone la casilla de ese buffer en true
+                 para que el siguiente ciclo elija otro
+                 y no se sobrepongan las piezas.
+                 El operador limpia con "NG Reset".
+
+Rack lleno       Devuelve IDLE con aviso en el log,
+                 en vez de reciclar el 001 y apilar.
+
+
+--------------------------------------------------------
+PRUEBAS EN DRY CYCLE
+--------------------------------------------------------
+[ ] El robot se mueve FISICAMENTE al rack NG
+    (esta es la prueba clave)
+[ ] En el log sale: "pieza a NG 001"
+[ ] En la pantalla HMI se marca el checkbox NG buffer1
+[ ] Segunda pieza va a 002, no a 001
+[ ] Al llenarse, sale "Rack NG lleno"
+
+
+--------------------------------------------------------
+SI EL ROBOT NO SE MUEVE A NG
+--------------------------------------------------------
+Detenerse ahi. No seguir modificando.
+
+Significa que el Epson necesita mas pasos de secuencia
+de los que se ven en GantryForm.cs. Para avanzar harian
+falta:
+  - GantryForm.designer.cs (cableado del flowchart)
+  - el programa SPEL del controlador Epson
+
+
+--------------------------------------------------------
+ESTO NO ARREGLA LA CAUSA
+--------------------------------------------------------
+La presion del gripper 2 no cae despues de soltar.
+
+Evidencia recopilada:
+  - Grafica: gripper 1 y 3 bajan a 0, el 2 se queda alto
+  - Tabla:   gripper 2 marca NG con 62.75
+             gripper 3 marca OK con 62.70
+  - Grippers 1 y 3 marcan OK incluso con presion 0
+
+El mismo valor de presion da resultado opuesto segun el
+gripper. Eso no se explica por hardware.
+
+El umbral y la logica viven en el SPEL del Epson, no en
+este C#. Es tema del proveedor.
+
+Este parche manda 1 de cada 3 piezas a NG. Es para
+aguantar, no para quedarse asi.
+
+========================================================
+FIN
+========================================================
