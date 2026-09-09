@@ -1,0 +1,118 @@
+========================================================
+PARCHE: GRIPPER 2 -> NG  (version contador 1-18)
+Archivo: GantryForm.cs
+Fecha: 09/09/2026
+========================================================
+
+Objetivo: que la pieza del gripper 2 no se intente
+colocar en el pallet, y se mande al rack NG rotando
+posiciones del 1 al 18.
+
+Ubicacion: metodo flowChart74_FlowRun
+           (comentario "//R1 Goto tray assemb Bpositon")
+           alrededor de la linea 5797.
+
+Buscar con Ctrl+F "flowChart74_FlowRun" en vez de ir por
+numero de linea, por si el archivo ya se movio.
+
+
+--------------------------------------------------------
+ANTES DE PEGAR
+--------------------------------------------------------
+Borrar cualquier parche anterior en este metodo:
+  - el que hacia "return FCResultType.CASE1;"
+    (ese daba el error 1004)
+  - el que hacia la busqueda de buffer libre con camara
+
+
+--------------------------------------------------------
+PASO 1: declarar el contador
+Linea 57 aprox, junto a gripperIndex
+--------------------------------------------------------
+
+int gripperIndex = 1;
+int ngPatchIndex = 1;          // <-- agregar esta
+
+
+--------------------------------------------------------
+PASO 2: pegar el bloque
+Justo despues de la llave de apertura del metodo,
+antes de "string[] pos = GetDataByAnnotation..."
+--------------------------------------------------------
+
+// ---- PARCHE TEMPORAL: gripper 2 va a NG (contador 1-18) ----
+if (gripperIndex == 2)
+{
+    SysPara.ngPos = string.Format("{0:d3}", ngPatchIndex);
+    ngPatchIndex++;
+    if (ngPatchIndex > 18) ngPatchIndex = 1;
+
+    if (Robot.WriteToEpson("016", SysPara.ngPos,
+        string.Format("{0:d2}", gripperIndex), 20000))
+    {
+        MiddleLayer.LogF.AddLog(LogType.NGProduct,
+            "Gripper2 deshabilitado - pieza a NG " + SysPara.ngPos, true);
+        RunTM.Restart();
+        return FCResultType.NEXT;
+    }
+    else
+    {
+        return FCResultType.IDLE;
+    }
+}
+// ---- FIN PARCHE ----
+
+
+--------------------------------------------------------
+DE DONDE SALIO
+--------------------------------------------------------
+Comando "016" (soltar en NG) ... linea 6529, flowChart91
+
+
+--------------------------------------------------------
+LIMITACIONES CONOCIDAS
+--------------------------------------------------------
+1. El contador se reinicia en 1 cada vez que cierras el
+   programa. Si el rack no esta vacio en ese momento,
+   las primeras piezas del turno se van encima de las
+   que ya estaban.
+
+2. No verifica nada. Va 1, 2, 3 ... 18 y vuelve a
+   empezar sin mirar si el slot tiene pieza. Alguien
+   tiene que vaciar el rack antes de que de la vuelta
+   completa.
+
+3. Tira 1 de cada 3 piezas a NG.
+
+AVISAR AL OPERADOR DEL TURNO que ese rack necesita
+vaciarse seguido.
+
+
+--------------------------------------------------------
+PRUEBAS
+--------------------------------------------------------
+[ ] Dry cycle con rack NG vacio
+[ ] Confirmar en log: "pieza a NG 001", luego 002, 003...
+[ ] Confirmar que despues del 018 vuelve al 001
+
+
+--------------------------------------------------------
+RECORDATORIO: ESTO NO ARREGLA LA CAUSA
+--------------------------------------------------------
+La presion del gripper 2 no cae despues de soltar.
+
+Evidencia recopilada:
+  - Grafica: gripper 1 y 3 bajan a 0, el 2 se queda alto
+  - Tabla: gripper 2 marca NG con 62.75
+           gripper 3 marca OK con 62.70
+  - Grippers 1 y 3 marcan OK incluso con presion 0
+
+El mismo valor de presion da resultado opuesto segun el
+gripper. Eso no se explica por hardware.
+
+El umbral y la logica viven en el SPEL del Epson, no en
+este C#. Es tema del proveedor.
+
+========================================================
+FIN
+========================================================
