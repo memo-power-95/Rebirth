@@ -1,0 +1,152 @@
+========================================================
+PARCHE: EVITAR EXCEPCION AL NO LEER EL QR
+Archivo: GantryForm.cs
+Metodo:  flowChart16_FlowRun
+         (comentario "Judge scan success and count")
+Fecha:   10/09/2026
+========================================================
+
+PROBLEMA
+--------------------------------------------------------
+Cuando una posicion viene sin PCB, o la PCB esta muy
+torcida y no se lee el QR, el programa lanza una
+excepcion de .NET (la alarma larga de GantryForm) y hay
+que reiniciar toda la maquina.
+
+CAUSA
+--------------------------------------------------------
+El codigo YA contempla saltarse piezas malas: las marca
+como "ERROR" y las manda a NG, y solo alarma (1302) si
+fallan las tres.
+
+El problema es que se cae ANTES de llegar a esa logica,
+por tres accesos a arreglo sin validar el rango.
+
+MaterialID_Array se declara en la linea 46 con tamano 3
+(indices validos 0, 1 y 2), pero se indexa sin revisar
+que el indice sea menor a 3.
+
+
+========================================================
+CAMBIO 1 - linea 2125 aprox
+========================================================
+
+ANTES:
+    MaterialID_Array[SysPara.Que_ProductCode_PickPos.Count] = SysPara.QRCode1;
+
+DESPUES:
+    if (SysPara.Que_ProductCode_PickPos.Count < MaterialID_Array.Length)
+    {
+        MaterialID_Array[SysPara.Que_ProductCode_PickPos.Count] = SysPara.QRCode1;
+    }
+
+
+========================================================
+CAMBIO 2 - linea 2137 aprox
+========================================================
+
+Este es el mas probable. Solo valida que la cola no este
+vacia, pero indexa con curR1HaveNum. Si falla el pick en
+la tercera posicion, curR1HaveNum vale 2, pero si solo
+se encolo una pieza el arreglo tiene largo 1, y
+pickPos[2] truena.
+
+ANTES:
+    if (SysPara.Que_ProductCode_PickPos.Count > 0)
+    {
+        ProductCode_PickPos[] pickPos = SysPara.Que_ProductCode_PickPos.ToArray();
+        pickPos[curR1HaveNum] = code_PickPos;
+
+DESPUES:
+    if (SysPara.Que_ProductCode_PickPos.Count > 0
+        && curR1HaveNum >= 0
+        && curR1HaveNum < SysPara.Que_ProductCode_PickPos.Count)
+    {
+        ProductCode_PickPos[] pickPos = SysPara.Que_ProductCode_PickPos.ToArray();
+        pickPos[curR1HaveNum] = code_PickPos;
+
+OJO: solo se cambia la linea del if. Lo de adentro y el
+resto del bloque queda igual.
+
+
+========================================================
+CAMBIO 3 - linea 2441 aprox
+========================================================
+
+ANTES:
+    MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+
+DESPUES:
+    if (CCDReuslt.Count < MaterialID_Array.Length)
+    {
+        MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+    }
+
+
+========================================================
+QUE CAMBIA EN LA OPERACION
+========================================================
+
+Antes:
+  Posicion sin PCB o QR ilegible
+    -> excepcion
+    -> reiniciar toda la maquina
+
+Despues:
+  Posicion sin PCB o QR ilegible
+    -> la pieza no se registra
+    -> scannerReuslt ya recibio su "false" en la linea 2123
+    -> flowChart63 la manda a NG
+    -> las otras dos siguen normal al pallet
+    -> sin reinicio
+
+
+========================================================
+PRUEBAS EN DRY CYCLE
+========================================================
+
+Quitar una PCB a proposito de una de las tres posiciones.
+
+[ ] No sale la alarma larga de GantryForm
+[ ] La posicion faltante se marca como ERROR en el log
+[ ] Las otras dos piezas llegan al pallet
+[ ] La maquina sigue corriendo sin reiniciar
+
+Repetir con la PCB faltante en la primera, la segunda y
+la tercera posicion. El caso de la tercera es el que mas
+importa, porque es donde curR1HaveNum se desincroniza.
+
+
+========================================================
+LO QUE NO ESTA CONFIRMADO
+========================================================
+
+Estos tres son los candidatos que se encontraron
+revisando el codigo, pero NO se ha visto el texto real
+de la excepcion.
+
+Cuando vuelva a salir, capturar la ventana completa:
+trae el nombre de la excepcion y el numero de linea.
+Si apunta a otra linea, este parche no la cubre.
+
+Tampoco se garantiza que la recuperacion quede limpia.
+Si algo mas adelante da por hecho que MaterialID_Array
+viene lleno, puede fallar de otro modo. Por eso las
+pruebas de arriba.
+
+
+========================================================
+NO CONFUNDIR CON LA ALARMA 1211
+========================================================
+
+La 1211 ("Camera check the Cover is tilted") es otro
+tema. Esa se decide en VisionPro, en la salida
+CoverIstilt del bloque H1_DischargePos, y el C# solo la
+lee (linea 3093).
+
+Esa alarma devuelve IDLE, o sea se recupera dando START.
+No obliga a reiniciar la maquina.
+
+========================================================
+FIN
+========================================================
