@@ -1695,6 +1695,82 @@ namespace Alpha._0.ModuleForms
         }
 
         #region Initial
+        //MOD@@ Reinicio rapido - portado de Bottom station <RRP_0001>
+        public void RestartProcessQuick()
+        {
+            if (SysPara.SystemRun)
+            {
+                MessageBox.Show("Detenga la maquina antes de usar el reinicio rapido.");
+                return;
+            }
+
+            reintento.Dispose();
+            reintento = new Reintento();
+            reintento.fnSetTextMessageNShow(
+                "REINICIO RAPIDO. Se limpiara el estado del proceso. Confirme que no hay PCB en los grippers.",
+                true, false, true);
+            if (reintento.dResult != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                throwingjudge = false;
+                CCDAlogrithmStatus = false;
+                AssmbleCCDAlogStatus = false;
+                isPickProduceOK = true;
+                curPalletCode = "";
+                curR1HaveNum = 0;
+                SysPara.RIniRet = false;
+                SysPara.JAGStarytEvent.Reset();
+                SysPara.OverPressureab = false;
+                SysPara.OverPressurebc = false;
+                SysPara.Que_ProductCode_PickPos.Clear();
+                SysPara.Que_pallet_Code.Clear();
+                SysPara.Que_Product_pallet_Code.Clear();
+                SysPara.R1GrabCompeletStatus = false;
+                SysPara.ScanCount = 0;
+                SysPara.R1ScanResult = false;
+                SysPara.R1AssembStatus = false;
+                MiddleLayer.ConveyorF.UpConveyorAutoFlow.NotifyAssembly = false;
+                SysPara.ProductCount = 12;
+                SysPara.FeederProductCount = 42;
+                SysPara.R1AssembResult = false;
+                SysPara.R1AssembCompeletStatus = false;
+                MiddleLayer.ConveyorF.UpConveyorAutoFlow.AssembCompeletStatus = false;
+                SysPara.TempAssembCompeletStatus = false;
+                SysPara.PressureCompelet = false;
+                SysPara.RobotPressureCompelet = false;
+                scannerReuslt.Clear();
+                CCDReuslt.Clear();
+                queCCDPosition.Clear();
+                scanCount = 0;
+                RunTM.Restart();
+                curProductCount = 0;
+                haveSendCodeToMES = true;
+                palletUpResult.Clear();
+                palletDownResult.Clear();
+                InitPickIndex(GetRecipeValue("RSet", "FeederPickIndex"));
+
+                MesTestList = new List<bool>() { true, true, true, true, true, true,
+                                                 true, true, true, true, true, true };
+                for (int i = 0; i < PCBCode.Length; i++)
+                {
+                    PCBCode[i] = "NA";
+                }
+
+                MiddleLayer.LogF.AddLog(LogType.Production,
+                    "Reinicio rapido ejecutado. Estado de proceso limpiado.", true);
+                MessageBox.Show("Reinicio rapido completado. Puede iniciar produccion.");
+            }
+            catch (Exception ex)
+            {
+                MiddleLayer.LogF.AddLog(LogType.Production,
+                    "Error en reinicio rapido: " + ex.Message, true);
+                MessageBox.Show("Error en reinicio rapido: " + ex.Message);
+            }
+        }
         private FCResultType fc_InitialStart_FlowRun(object sender, EventArgs e)
         {
             throwingjudge = false;
@@ -2122,7 +2198,10 @@ namespace Alpha._0.ModuleForms
 
             scannerReuslt.Add(SysPara.R1ScanResult);
 
-            MaterialID_Array[SysPara.Que_ProductCode_PickPos.Count] = SysPara.QRCode1;
+            if (SysPara.Que_ProductCode_PickPos.Count < MaterialID_Array.Length)
+            {
+                MaterialID_Array[SysPara.Que_ProductCode_PickPos.Count] = SysPara.QRCode1;
+            }
 
             ProductCode_PickPos code_PickPos = new ProductCode_PickPos();       //scan success，Record productCode and Index
             code_PickPos.Code = SysPara.QRCode1;
@@ -2133,7 +2212,9 @@ namespace Alpha._0.ModuleForms
             }        //if pick success,Enqueue in Queue
             else                                                                                //if pick fail,replace the first
             {
-                if (SysPara.Que_ProductCode_PickPos.Count > 0)
+                if (SysPara.Que_ProductCode_PickPos.Count > 0
+                    && curR1HaveNum >= 0
+                    && curR1HaveNum < SysPara.Que_ProductCode_PickPos.Count)
                 {
                     ProductCode_PickPos[] pickPos = SysPara.Que_ProductCode_PickPos.ToArray();
                     pickPos[curR1HaveNum] = code_PickPos;
@@ -2166,10 +2247,23 @@ namespace Alpha._0.ModuleForms
 
                 if (!scannerReuslt.Contains(true))
                 {
+                    SysPara.NPShowAlarm("1302");
+                    reintento.Dispose();
+                    reintento = new Reintento();
+                    reintento.fnSetTextMessageNShow("No se leyo el QR. Acomode las PCB y presione Yes para reintentar, o No para continuar.", true, false, true);
+                    if (reintento.dResult == DialogResult.Yes)
+                    {
+                        QRCode.Clear();
+                        scannerReuslt.Clear();
+                        SysPara.Que_ProductCode_PickPos.Clear();
+                        curR1HaveNum = 0;
+                        curR1HaveOKNum = 0;
+                        return FCResultType.IDLE;
+                    }
+
                     QRCode.Clear();
                     scannerReuslt.Clear();
                     SysPara.Que_ProductCode_PickPos.Clear();
-                    SysPara.NPShowAlarm("1302");
                     return FCResultType.CASE1;
                     
                 }
@@ -2438,7 +2532,10 @@ namespace Alpha._0.ModuleForms
                             // 更新队列
                             scannerReuslt.Add(SysPara.R1ScanResult);
                             QRCode.Add(SysPara.QRCode1);
-                            MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+                            if (CCDReuslt.Count < MaterialID_Array.Length)
+                            {
+                                MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+                            }
                             newCode = new ProductCode_PickPos
                             {
                                 Code = SysPara.QRCode1,
@@ -2507,12 +2604,15 @@ namespace Alpha._0.ModuleForms
 
             //scannerReuslt.Add(false);
 
-            if (scannerReuslt[CCDReuslt.Count])
+            if (CCDReuslt.Count < scannerReuslt.Count && scannerReuslt[CCDReuslt.Count])
             {
 
                 if (!CCDAlogrithmStatus)
                 {
-                    MaterialID_Array[CCDReuslt.Count] = "";
+                    if (CCDReuslt.Count < MaterialID_Array.Length)
+                    {
+                        MaterialID_Array[CCDReuslt.Count] = "";
+                    }
                 }
                 CCDReuslt.Add(CCDAlogrithmStatus);
 
@@ -2520,7 +2620,10 @@ namespace Alpha._0.ModuleForms
             }
             else
             {
-                MaterialID_Array[CCDReuslt.Count] = "";
+                if (CCDReuslt.Count < MaterialID_Array.Length)
+                {
+                    MaterialID_Array[CCDReuslt.Count] = "";
+                }
                 CCDReuslt.Add(false);
             }
             queCCDPosition.Enqueue(SysPara.visionPos);
@@ -2648,7 +2751,12 @@ namespace Alpha._0.ModuleForms
                     curR1HaveNum = pickPos.Count();
                 }
 
-                pickPos[curR1HaveNum - 1].CCDResult = CCDReuslt[curR1HaveNum - 1];
+                if (curR1HaveNum >= 1
+                    && curR1HaveNum <= pickPos.Count()
+                    && curR1HaveNum <= CCDReuslt.Count)
+                {
+                    pickPos[curR1HaveNum - 1].CCDResult = CCDReuslt[curR1HaveNum - 1];
+                }
 
                 //if (!pickPos[curR1HaveNum - 1].CCDResult)
                 //{ MaterialID_Array[curR1HaveNum - 1] = ""; }//huan
@@ -2889,7 +2997,7 @@ namespace Alpha._0.ModuleForms
 
                             return FCResultType.NEXT;
                         }
-                        if (!MesTestList[SysPara.Que_Product_pallet_Code.Count]/* && SysPara.Que_Product_pallet_Code.Count < 3*/)
+                        if (SysPara.Que_Product_pallet_Code.Count < MesTestList.Count && !MesTestList[SysPara.Que_Product_pallet_Code.Count]/* && SysPara.Que_Product_pallet_Code.Count < 3*/)
                         {
                             //AssmbleCCDAlogStatus = false;
                             //      queCCDPosition.Dequeue();
@@ -2907,7 +3015,7 @@ namespace Alpha._0.ModuleForms
                         else
                         {
 
-                            if (!SysPara.MESReportResult[gripperIndex - 1])
+                            if (gripperIndex >= 1 && gripperIndex <= SysPara.MESReportResult.Length && !SysPara.MESReportResult[gripperIndex - 1])
                             {
                                 bMESPCBIsNG = true;
                                 return FCResultType.CASE2;
@@ -3083,7 +3191,11 @@ namespace Alpha._0.ModuleForms
                     SaveImage image = new SaveImage();
                     image.Image = new Bitmap(cogRecDisp_H5_Recipe.CreateContentBitmap(CogDisplayContentBitmapConstants.Display));
                     image.Timer = DateTime.Now.ToString("yyyyMMddHHmmss");
-                    image.PalletQRCode = MESLib.CommParas.MesManager.TRAY_POSITION_QRCODEs[CCDReuslt.Count * 2];
+                    try
+                    {
+                        image.PalletQRCode = MESLib.CommParas.MesManager.TRAY_POSITION_QRCODEs[CCDReuslt.Count * 2];
+                    }
+                    catch { image.PalletQRCode = "NA"; }
                     image.PCBQRCode = "NA";
                     ProductImages.Add(image);
                     bool coverIsTilt = false;
@@ -3094,9 +3206,27 @@ namespace Alpha._0.ModuleForms
 
                         if (coverIsTilt)
                         {
-                            //SysPara.NPShowAlarm("1211");        //Cover is tilt
-                            SDKKernal.ShowAlarm("1211");
-                            return FCResultType.IDLE;
+                            // ---- reintento 1211: confirmar con 2 lecturas mas ----
+                            int tiltVotes = 1;
+                            for (int t = 0; t < 2; t++)
+                            {
+                                Thread.Sleep(150);
+                                if (!H1_DischargePos.TakePicture(exposure)) { continue; }
+                                if (!H1_DischargePos.IsAccept) { continue; }
+                                if ((bool)H1_DischargePos.GetOutput("CoverIstilt")) { tiltVotes++; }
+                            }
+
+                            MiddleLayer.LogF.AddLog(LogType.Production,
+                                "CoverIstilt votos: " + tiltVotes + "/3",
+                                SysPara.bEnableGeneralSaveLog);
+
+                            if (tiltVotes >= 2)
+                            {
+                                //SysPara.NPShowAlarm("1211");        //Cover is tilt
+                                SDKKernal.ShowAlarm("1211");
+                                return FCResultType.IDLE;
+                            }
+                            // ---- fin reintento 1211 ----
                         }
                         palletUpResult.Add((bool)H1_DischargePos.GetOutput("LeftUpResult"));
                         palletUpResult.Add((bool)H1_DischargePos.GetOutput("RightUpResult"));
@@ -3371,7 +3501,7 @@ namespace Alpha._0.ModuleForms
 
 
 
-                if (SysPara.Que_Product_pallet_Code.Count < (Int16)GetRecipeValue("RSet", "PaaletProductCount") && MesTestList[SysPara.Que_Product_pallet_Code.Count])
+                if (SysPara.Que_Product_pallet_Code.Count < (Int16)GetRecipeValue("RSet", "PaaletProductCount") && SysPara.Que_Product_pallet_Code.Count < MesTestList.Count && MesTestList[SysPara.Que_Product_pallet_Code.Count])
                 {
                     SysPara.ProductPalletCode.data = SysPara.PressureData.ToString();
                     SysPara.ProductPalletCode.PressureResult = AssmbleCCDAlogStatus && !SysPara.OverPressureab && !SysPara.OverPressurebc;
@@ -5307,7 +5437,10 @@ namespace Alpha._0.ModuleForms
 
         private FCResultType flowChart63_FlowRun(object sender, EventArgs e)
         {
-            if ((CCDReuslt[curR1HaveNum]) && (scannerReuslt[curR1HaveNum]))
+            if (curR1HaveNum >= 0
+                && curR1HaveNum < CCDReuslt.Count
+                && curR1HaveNum < scannerReuslt.Count
+                && (CCDReuslt[curR1HaveNum]) && (scannerReuslt[curR1HaveNum]))
             {
                 curR1HaveOKNum++;
                 return FCResultType.NEXT;
@@ -5808,6 +5941,7 @@ namespace Alpha._0.ModuleForms
                     {
 
                         int num = InvertOrder(SysPara.Que_ProductCode_PickPos.Count);
+                        if (num < 1 || num > FeederImages.Count) { return; }
                         string saveImgPath = MiddleLayer.GantryF.GetSettingValue("PSet", "SaveImagePath") + "\\";
                         string ImgSaveName = string.Format(@"{0}_{1}_NA_NA_{2}_{3}.bmp",
                                FeederImages[num - 1].PCBQRCode,
@@ -5816,7 +5950,10 @@ namespace Alpha._0.ModuleForms
                            MiddleLayer.MesF2.GetSettingValue("PSet", "EQPID")
                            );
 
-                        PCBCode[SysPara.Que_Product_pallet_Code.Count] = FeederImages[num - 1].PCBQRCode;
+                        if (SysPara.Que_Product_pallet_Code.Count < PCBCode.Length)
+                        {
+                            PCBCode[SysPara.Que_Product_pallet_Code.Count] = FeederImages[num - 1].PCBQRCode;
+                        }
                         using (Bitmap img = new Bitmap(FeederImages[num - 1].Image))
                         {
                             if (!Directory.Exists(saveImgPath)) { Directory.CreateDirectory(saveImgPath); }
@@ -6529,7 +6666,7 @@ namespace Alpha._0.ModuleForms
             if (Robot.WriteToEpson("016", SysPara.ngPos, string.Format("{0:d2}", gripperIndex), 20000))
             {
                 int QRCodeCount = gripperIndex; /*InvertOrder(SysPara.Que_ProductCode_PickPos.Count);*/
-                string QR = QRCode[gripperIndex - 1];
+                string QR = (gripperIndex >= 1 && gripperIndex <= QRCode.Count) ? QRCode[gripperIndex - 1] : "";
 
                 string str = string.Format(QRCodeCount.ToString() + "# Product,QRCode:{0},NGIndex:" + SysPara.ngPos, QR);
                 MiddleLayer.LogF.AddLog(LogType.NGProduct, str, true);
@@ -7839,7 +7976,10 @@ namespace Alpha._0.ModuleForms
                         foreach (var p in CurrentPCBList)
                         {
                             int index = p.Key;
-                            palletResultCopy[index] = true;
+                            if (index >= 0 && index < palletResultCopy.Count)
+                            {
+                                palletResultCopy[index] = true;
+                            }
                         }
                         // remove all materials(as don't know which  one is fail
                         for (int i = 0; i < MaterialID_Array.Length; i++)
@@ -7891,7 +8031,10 @@ namespace Alpha._0.ModuleForms
                             foreach (var p in CurrentPCBList)
                             {
                                 int index = p.Key;
-                                palletResultCopy[index] = true;
+                                if (index >= 0 && index < palletResultCopy.Count)
+                                {
+                                    palletResultCopy[index] = true;
+                                }
                             }
                             // remove all materials(as don't know which  one is fail
                             for (int i = 0; i < MaterialID_Array.Length; i++)
@@ -7955,7 +8098,10 @@ namespace Alpha._0.ModuleForms
                         foreach (var p in CurrentPCBList)
                         {
                             int index = p.Key;
-                            palletResultCopy[index] = true;
+                            if (index >= 0 && index < palletResultCopy.Count)
+                            {
+                                palletResultCopy[index] = true;
+                            }
                         }
                         // change materiallist
                         for (int i = 0; i < MaterialID_Array.Length; i++)
@@ -8007,7 +8153,10 @@ namespace Alpha._0.ModuleForms
                             foreach (var p in CurrentPCBList)
                             {
                                 int index = p.Key;
-                                palletResultCopy[index] = true;
+                                if (index >= 0 && index < palletResultCopy.Count)
+                                {
+                                    palletResultCopy[index] = true;
+                                }
                             }
                             // change materiallist
                             for (int i = 0; i < MaterialID_Array.Length; i++)
@@ -10266,7 +10415,10 @@ namespace Alpha._0.ModuleForms
 
                         scannerReuslt.Add(SysPara.R1ScanResult);
                         QRCode.Add(SysPara.QRCode1);
-                        MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+                        if (CCDReuslt.Count < MaterialID_Array.Length)
+                        {
+                            MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+                        }
                         newCode = new ProductCode_PickPos
                         {
                             Code = SysPara.QRCode1,
@@ -10287,7 +10439,10 @@ namespace Alpha._0.ModuleForms
 
                     scannerReuslt.Add(SysPara.R1ScanResult);
                     QRCode.Add(SysPara.QRCode1);
-                    MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+                    if (CCDReuslt.Count < MaterialID_Array.Length)
+                    {
+                        MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+                    }
                     newCode = new ProductCode_PickPos
                     {
                         Code = SysPara.QRCode1,
@@ -10307,7 +10462,10 @@ namespace Alpha._0.ModuleForms
 
                     scannerReuslt.Add(SysPara.R1ScanResult);
                     QRCode.Add(SysPara.QRCode1);
-                    MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+                    if (CCDReuslt.Count < MaterialID_Array.Length)
+                    {
+                        MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
+                    }
                     newCode = new ProductCode_PickPos
                     {
                         Code = SysPara.QRCode1,
