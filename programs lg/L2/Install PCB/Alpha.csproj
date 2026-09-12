@@ -1,0 +1,1125 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{476BBCA4-3ADC-46D1-B852-A46251CA072A}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Alpha</RootNamespace>
+    <AssemblyName>Alpha</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <PublishUrl>C:\Shared\Aptiv_Laser\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Unc</InstallFrom>
+    <UpdateEnabled>true</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>\\mxzapm5lt203\Shared\Aptiv_Laser\</InstallUrl>
+    <ApplicationRevision>16</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\AcuraEXE\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\AcuraEXE\</OutputPath>
+    <DefineConstants>
+    </DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\AlphaEXE\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <LangVersion>default</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>LG.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>846FFA5A57623C20364F77CAEE85DE70CDD25990</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Acura3.0_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>false</SignManifests>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AcuraIOT, Version=1.0.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AcuraIOT.1.0.30\lib\net45\AcuraIOT.dll</HintPath>
+    </Reference>
+    <Reference Include="AcuraLibrary, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\ModuleBaseLibrary\bin\Debug\AcuraLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="AForge">
+      <HintPath>ReferenceDLL\WebCam\AForge.dll</HintPath>
+    </Reference>
+    <Reference Include="AForge.Video">
+      <HintPath>ReferenceDLL\WebCam\AForge.Video.dll</HintPath>
+    </Reference>
+    <Reference Include="AForge.Video.DirectShow">
+      <HintPath>ReferenceDLL\WebCam\AForge.Video.DirectShow.dll</HintPath>
+    </Reference>
+    <Reference Include="Amqp.Net, Version=2.1.0.0, Culture=neutral, PublicKeyToken=905a7b1e6458e0c3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Botton_ST05\0809\Acura3.5_BST05_0809\Acura3.0\AcuraEXE\Amqp.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="AsyncAwaitBestPractices, Version=1.0.0.0, Culture=neutral, PublicKeyToken=532360cfd341384d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AsyncAwaitBestPractices.5.1.0\lib\netstandard2.0\AsyncAwaitBestPractices.dll</HintPath>
+    </Reference>
+    <Reference Include="Automation.BDaq">
+      <HintPath>ReferenceDLL\Automation.BDaq.dll</HintPath>
+    </Reference>
+    <Reference Include="CheckPoint">
+      <HintPath>ReferenceDLL\CheckPoint.dll</HintPath>
+    </Reference>
+    <Reference Include="CheckPointDLL">
+      <HintPath>ReferenceDLL\CheckPointDLL.dll</HintPath>
+    </Reference>
+    <Reference Include="CIPCompolet64">
+      <HintPath>ReferenceDLL\CIPCompolet64.dll</HintPath>
+    </Reference>
+    <Reference Include="CIPCompoletProxyLib">
+      <HintPath>ReferenceDLL\CIPCompoletProxyLib.dll</HintPath>
+    </Reference>
+    <Reference Include="CIPCompoletProxyServer">
+      <HintPath>ReferenceDLL\CIPCompoletProxyServer.exe</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Blob, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Blob.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.CalibFix, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.CalibFix.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.CalibFix.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.CalibFix.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.CalibFixPlus, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.CalibFixPlus.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Caliper, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Caliper.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Caliper.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Caliper.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Comm, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Comm.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Core, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.CorePlus, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.CorePlus.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Database, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Database.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Display.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Display.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.FG1394DCAM, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.FG1394DCAM.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.FG8100, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.FG8100.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.FG8100L, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.FG8100L.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.FGGigE, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.FGGigE.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.ID, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.ID.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.ImageFile, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.ImageFile.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.ImageFile.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.ImageFile.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.ImageProcessing, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.ImageProcessing.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.ImageProcessing.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.ImageProcessing.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Inspection, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Inspection.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Inspection.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Inspection.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.Interop.Core, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.Interop.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.PMAlign, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.PMAlign.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.PMAlign.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.PMAlign.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.QuickBuild.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.QuickBuild.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.QuickBuild.Core, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.QuickBuild.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.QuickBuild.IO, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.QuickBuild.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.ResultsAnalysis, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.ResultsAnalysis.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.ToolGroup, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.ToolGroup.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro.ToolGroup.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro.ToolGroup.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro3D, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro3D.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro3D.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro3D.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro3D.Core, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro3D.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro3D.Display.Controls, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro3D.Display.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Cognex.VisionPro3D.Graphic, Version=63.4.0.0, Culture=neutral, PublicKeyToken=ef0f902af9dee505, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Cognex Vision Pro 9.2\Cognex.VisionPro3D.Graphic.dll</HintPath>
+    </Reference>
+    <Reference Include="Communication, Version=6.17.921.1422, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Communication.dll</HintPath>
+    </Reference>
+    <Reference Include="CrestronCuringSystemAPI_Client">
+      <HintPath>ReferenceDLL\CrestronCuringSystemAPI_Client.dll</HintPath>
+    </Reference>
+    <Reference Include="EasyModbus, Version=5.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\EasyModbus.dll</HintPath>
+    </Reference>
+    <Reference Include="FlowChartV2">
+      <HintPath>..\..\..\..\Documents\Visual Studio 2015\Projects\FlowChartV2\FlowChartV2\bin\Debug\FlowChartV2.dll</HintPath>
+    </Reference>
+    <Reference Include="FUTEK_USB_DLL">
+      <HintPath>ReferenceDLL\FUTEK_USB_DLL.dll</HintPath>
+    </Reference>
+    <Reference Include="HoursProductShow, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>E:\项目\LG\新建文件夹\Top-St05\Acura3.5_ST05 _10.15\Acura3.0\AcuraEXE\HoursProductShow.dll</HintPath>
+    </Reference>
+    <Reference Include="HslCommunication, Version=9.3.1.0, Culture=neutral, PublicKeyToken=cdb2261fa039ed67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AcuraEXE\HslCommunication.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.ADODB">
+      <HintPath>ReferenceDLL\Interop.ADODB.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="Interop.ADOX">
+      <HintPath>ReferenceDLL\Interop.ADOX.dll</HintPath>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="IXSensorControl">
+      <HintPath>ReferenceDLL\KeyenceIXSensor\bin\Debug\IXSensorControl.dll</HintPath>
+    </Reference>
+    <Reference Include="Keyence.AutoID.SDK, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\Keyence.AutoID.SDK.dll</HintPath>
+    </Reference>
+    <Reference Include="LG.MesFile.DeleteFile, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AlphaEXE\LG.MesFile.DeleteFile.dll</HintPath>
+    </Reference>
+    <Reference Include="libzkfpcsharp, Version=1.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AcuraEXE\libzkfpcsharp.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=2.0.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AlphaEXE\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="logging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AlphaEXE\logging.dll</HintPath>
+    </Reference>
+    <Reference Include="LogManager, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AlphaEXE\LogManager.dll</HintPath>
+    </Reference>
+    <Reference Include="LogSv, Version=1.0.0.5, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AcuraEXE\LogSv.dll</HintPath>
+    </Reference>
+    <Reference Include="MESLib, Version=1.0.0.30, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AlphaEXE\MESLib.dll</HintPath>
+    </Reference>
+    <Reference Include="netstandard" />
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NPFanucRobotDLL">
+      <HintPath>ReferenceDLL\NPFanucRobotDLL.dll</HintPath>
+    </Reference>
+    <Reference Include="NPSDK, Version=2.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Alpha-ST01-1128\Bottom-ST01\Alpha_BTST01_11.28\Alpha_BTST01_1128\Alpha\AcuraEXE\NPSDK.dll</HintPath>
+    </Reference>
+    <Reference Include="PalletLinkSNDLL, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\PalletLinkSNDLL.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="PressureScann">
+      <HintPath>ReferenceDLL\PressureScann.dll</HintPath>
+    </Reference>
+    <Reference Include="RabbitMQ.Client, Version=6.0.0.0, Culture=neutral, PublicKeyToken=89e7d7c5feba84ce, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\Botton_ST05\0809\Acura3.5_BST05_0809\Acura3.0\AcuraEXE\RabbitMQ.Client.dll</HintPath>
+    </Reference>
+    <Reference Include="RobotInterfaceDotNet, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.SQLite, Version=1.0.118.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AlphaEXE\System.Data.SQLite.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Design" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.5.0.0\lib\net45\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="TcpipHelper, Version=1.0.0.5, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AlphaEXE\TcpipHelper.dll</HintPath>
+    </Reference>
+    <Reference Include="TwinCAT.Ads, Version=4.3.0.0, Culture=neutral, PublicKeyToken=180016cd49e5e8c3" />
+    <Reference Include="VncClientControlCommon, Version=6.17.921.1422, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\VncClientControlCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="VncClientControlCommonLib, Version=6.17.921.1422, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>ReferenceDLL\VncClientControlCommonLib.dll</HintPath>
+    </Reference>
+    <Reference Include="vuControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AcuraEXE\vuControl.dll</HintPath>
+    </Reference>
+    <Reference Include="WebCam_Capture">
+      <HintPath>ReferenceDLL\WebCam\WebCam_Capture.dll</HintPath>
+    </Reference>
+    <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AcuraEXE\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
+    </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="WPFVisifire.Charts, Version=5.1.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\AcuraEXE\WPFVisifire.Charts.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Classes\AcuraColors.cs" />
+    <Compile Include="Classes\AlarmExtensionsV2.cs" />
+    <Compile Include="Classes\CameraTCP.cs" />
+    <Compile Include="Classes\cFunctions.cs" />
+    <Compile Include="Classes\CFXHandler.cs" />
+    <Compile Include="Classes\DataSaver.cs" />
+    <Compile Include="Classes\Emuns.cs" />
+    <Compile Include="Classes\Epson.cs" />
+    <Compile Include="Classes\EthernetPF.cs" />
+    <Compile Include="Classes\EthernetPF2.cs" />
+    <Compile Include="Classes\FFUCom.cs" />
+    <Compile Include="Classes\INIHelper.cs" />
+    <Compile Include="Classes\KeyboardHook.cs" />
+    <Compile Include="Classes\Message.cs" />
+    <Compile Include="Classes\MID.cs" />
+    <Compile Include="Classes\MouseHook.cs" />
+    <Compile Include="Classes\NPSerialProt.cs" />
+    <Compile Include="Classes\NPTCPClient.cs" />
+    <Compile Include="Classes\OPTControllerAPI.cs" />
+    <Compile Include="Classes\ReadCOM.cs" />
+    <Compile Include="Classes\SaveFile.cs" />
+    <Compile Include="Classes\SimpleTcpClient.cs" />
+    <Compile Include="Classes\SmartAlarm.cs" />
+    <Compile Include="Classes\SwitchLanguage.cs" />
+    <Compile Include="Classes\TCPIP.cs" />
+    <Compile Include="Classes\WebCam.cs" />
+    <Compile Include="Classes\XMLExpand.cs" />
+    <Compile Include="FunctionForms\About_Form.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\About_Form.Designer.cs">
+      <DependentUpon>About_Form.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\AxisIOMaintenance.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\AxisIOMaintenance.designer.cs">
+      <DependentUpon>AxisIOMaintenance.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\Edit_TB_Form.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\Edit_TB_Form.designer.cs">
+      <DependentUpon>Edit_TB_Form.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\ExceptionReportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\ExceptionReportForm.Designer.cs">
+      <DependentUpon>ExceptionReportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\Finger\BitmapFormat.cs" />
+    <Compile Include="FunctionForms\LoadingMarqueeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\LoadingMarqueeForm.designer.cs">
+      <DependentUpon>LoadingMarqueeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\LogForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\LogForm.designer.cs">
+      <DependentUpon>LogForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\ManualScanForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\ManualScanForm.Designer.cs">
+      <DependentUpon>ManualScanForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\MensajeForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\MensajeForm.designer.cs">
+      <DependentUpon>MensajeForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\MESForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\MESForm.designer.cs">
+      <DependentUpon>MESForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\ModalVProRac.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\ModalVProRac.designer.cs">
+      <DependentUpon>ModalVProRac.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\MotorControlForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\MotorControlForm.Designer.cs">
+      <DependentUpon>MotorControlForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\MotorJogForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\MotorJogForm.designer.cs">
+      <DependentUpon>MotorJogForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\OptionChoiceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\OptionChoiceForm.designer.cs">
+      <DependentUpon>OptionChoiceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\ProcessDataForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\ProcessDataForm.Designer.cs">
+      <DependentUpon>ProcessDataForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\Reintento.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\Reintento.designer.cs">
+      <DependentUpon>Reintento.cs</DependentUpon>
+    </Compile>
+    <Compile Include="FunctionForms\UserLoginForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\UserLoginForm.Designer.cs">
+      <DependentUpon>UserLoginForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleForms\AlarmForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\AlarmForm.Designer.cs">
+      <DependentUpon>AlarmForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleForms\IXSensorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\IXSensorForm.Designer.cs">
+      <DependentUpon>IXSensorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleForms\ConveyorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\ConveyorForm.Designer.cs">
+      <DependentUpon>ConveyorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleForms\GantryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\GantryForm.Designer.cs">
+      <DependentUpon>GantryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleForms\LotForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\LotForm.Designer.cs">
+      <DependentUpon>LotForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleForms\MesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\MesForm.designer.cs">
+      <DependentUpon>MesForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleForms\ProcessForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\ProcessForm.Designer.cs">
+      <DependentUpon>ProcessForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleForms\ScannerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\ScannerForm.designer.cs">
+      <DependentUpon>ScannerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModuleForms\VisionProRAC.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\VisionProRAC.designer.cs">
+      <DependentUpon>VisionProRAC.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Resources\Vision\H1_DischargePos.cs" />
+    <Compile Include="Resources\Vision\H1_DownCCDPickup.cs" />
+    <Compile Include="Resources\Vision\H1_NGCCDCheck.cs" />
+    <Compile Include="Resources\Vision\H1_Pickup2Pos.cs" />
+    <Compile Include="Resources\Vision\H1_PickupPos.cs" />
+    <Compile Include="Resources\Vision\H2_Pickup2Pos.cs" />
+    <Compile Include="Resources\Vision\H2_PickupPos.cs" />
+    <Compile Include="Resources\Vision\TBEditForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Resources\Vision\TBEditForm.Designer.cs" />
+    <Compile Include="Resources\Vision\VproAlogrithm.cs" />
+    <Compile Include="Service References\wsBoardHistoryReport\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\wsCheckPoint\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\wsSelectByNameAssembly\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Service References\wsSelectBySerialNumber\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="SystemParameter.cs" />
+    <Compile Include="Classes\DataBase.cs" />
+    <Compile Include="Classes\IniFile.cs" />
+    <Compile Include="Classes\StringList.cs" />
+    <Compile Include="FlowControl.cs" />
+    <Compile Include="FunctionForms\SignalTowerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FunctionForms\SignalTowerForm.Designer.cs">
+      <DependentUpon>SignalTowerForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MENUForms\FlowChartForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MENUForms\FlowChartForm.Designer.cs">
+      <DependentUpon>FlowChartForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MENUForms\MachineSetupForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MENUForms\MachineSetupForm.Designer.cs">
+      <DependentUpon>MachineSetupForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MENUForms\MachineStatusForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MENUForms\MachineStatusForm.Designer.cs">
+      <DependentUpon>MachineStatusForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MENUForms\MaintenanceForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MENUForms\MaintenanceForm.Designer.cs">
+      <DependentUpon>MaintenanceForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MENUForms\ProductionSettingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MENUForms\ProductionSettingForm.Designer.cs">
+      <DependentUpon>ProductionSettingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MENUForms\RecipeEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MENUForms\RecipeEditorForm.Designer.cs">
+      <DependentUpon>RecipeEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MENUForms\UserSettingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MENUForms\UserSettingForm.Designer.cs">
+      <DependentUpon>UserSettingForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MiddleLayer.cs" />
+    <Compile Include="ModuleForms\SystemForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ModuleForms\SystemForm.Designer.cs">
+      <DependentUpon>SystemForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TStringList.cs" />
+    <Compile Include="UserControl\UC_DownConveyorAutoFlow.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="UserControl\UC_DownConveyorAutoFlow.Designer.cs">
+      <DependentUpon>UC_DownConveyorAutoFlow.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="FunctionForms\About_Form.resx">
+      <DependentUpon>About_Form.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\AxisIOMaintenance.resx">
+      <DependentUpon>AxisIOMaintenance.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\Edit_TB_Form.resx">
+      <DependentUpon>Edit_TB_Form.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\ExceptionReportForm.resx">
+      <DependentUpon>ExceptionReportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\LoadingMarqueeForm.resx">
+      <DependentUpon>LoadingMarqueeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\LogForm.resx">
+      <DependentUpon>LogForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\ManualScanForm.resx">
+      <DependentUpon>ManualScanForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\MensajeForm.resx">
+      <DependentUpon>MensajeForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\MESForm.resx">
+      <DependentUpon>MESForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\ModalVProRac.resx">
+      <DependentUpon>ModalVProRac.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\MotorControlForm.resx">
+      <DependentUpon>MotorControlForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\MotorJogForm.resx">
+      <DependentUpon>MotorJogForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\OptionChoiceForm.resx">
+      <DependentUpon>OptionChoiceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\ProcessDataForm.resx">
+      <DependentUpon>ProcessDataForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\Reintento.resx">
+      <DependentUpon>Reintento.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\SignalTowerForm.resx">
+      <DependentUpon>SignalTowerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FunctionForms\UserLoginForm.resx">
+      <DependentUpon>UserLoginForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MENUForms\FlowChartForm.resx">
+      <DependentUpon>FlowChartForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MENUForms\MachineSetupForm.resx">
+      <DependentUpon>MachineSetupForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MENUForms\MachineStatusForm.resx">
+      <DependentUpon>MachineStatusForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MENUForms\MaintenanceForm.resx">
+      <DependentUpon>MaintenanceForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MENUForms\ProductionSettingForm.resx">
+      <DependentUpon>ProductionSettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MENUForms\RecipeEditorForm.resx">
+      <DependentUpon>RecipeEditorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MENUForms\UserSettingForm.resx">
+      <DependentUpon>UserSettingForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\AlarmForm.resx">
+      <DependentUpon>AlarmForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\IXSensorForm.resx">
+      <DependentUpon>IXSensorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\ConveyorForm.resx">
+      <DependentUpon>ConveyorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\GantryForm.resx">
+      <DependentUpon>GantryForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\LotForm.resx">
+      <DependentUpon>LotForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\MesForm.resx">
+      <DependentUpon>MesForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\ProcessForm.resx">
+      <DependentUpon>ProcessForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\ScannerForm.resx">
+      <DependentUpon>ScannerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\SystemForm.resx">
+      <DependentUpon>SystemForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ModuleForms\VisionProRAC.resx">
+      <DependentUpon>VisionProRAC.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Resources\Vision\TBEditForm.resx" />
+    <EmbeddedResource Include="UserControl\UC_DownConveyorAutoFlow.resx">
+      <DependentUpon>UC_DownConveyorAutoFlow.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\DataSources\System.Data.DataSet.datasource" />
+    <None Include="Properties\DataSources\System.Data.DataTable.datasource" />
+    <None Include="Properties\DataSources\System.Xml.XmlNode.datasource" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+    <None Include="Service References\wsBoardHistoryReport\Alpha.wsBoardHistoryReport.GetBoardSideMachineResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsBoardHistoryReport\Alpha.wsBoardHistoryReport.GetBoardSideResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsBoardHistoryReport\Alpha.wsBoardHistoryReport.IsMasterModelResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsBoardHistoryReport\Alpha.wsBoardHistoryReport.IsMasterProductResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsBoardHistoryReport\Alpha.wsBoardHistoryReport.IsMasterResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsBoardHistoryReport\Alpha.wsBoardHistoryReport.IsMasterTypeResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsBoardHistoryReport\MES.wsdl" />
+    <None Include="Service References\wsCheckPoint\Alpha.wsCheckPoint.GetBoardSideMachineResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsCheckPoint\Alpha.wsCheckPoint.GetBoardSideResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsCheckPoint\Alpha.wsCheckPoint.IsMasterModelResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsCheckPoint\Alpha.wsCheckPoint.IsMasterProductResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsCheckPoint\Alpha.wsCheckPoint.IsMasterResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsCheckPoint\Alpha.wsCheckPoint.IsMasterTypeResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsCheckPoint\MES.wsdl" />
+    <None Include="Service References\wsSelectByNameAssembly\Alpha.wsSelectByNameAssembly.GetBoardSideMachineResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectByNameAssembly\Alpha.wsSelectByNameAssembly.GetBoardSideResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectByNameAssembly\Alpha.wsSelectByNameAssembly.IsMasterModelResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectByNameAssembly\Alpha.wsSelectByNameAssembly.IsMasterProductResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectByNameAssembly\Alpha.wsSelectByNameAssembly.IsMasterResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectByNameAssembly\Alpha.wsSelectByNameAssembly.IsMasterTypeResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectByNameAssembly\MES.wsdl" />
+    <None Include="Service References\wsSelectBySerialNumber\Alpha.wsSelectBySerialNumber.GetBoardSideMachineResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectBySerialNumber\Alpha.wsSelectBySerialNumber.GetBoardSideResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectBySerialNumber\Alpha.wsSelectBySerialNumber.IsMasterModelResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectBySerialNumber\Alpha.wsSelectBySerialNumber.IsMasterProductResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectBySerialNumber\Alpha.wsSelectBySerialNumber.IsMasterResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectBySerialNumber\Alpha.wsSelectBySerialNumber.IsMasterTypeResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\wsSelectBySerialNumber\MES.wsdl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\machineState.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\machineSetup.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\recipeeditor.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\productionSettings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\maintenance.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\FlowChart.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\usersettings.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\Exit.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Operation\pause.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Operation\stop.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\CFX\CFX.csproj">
+      <Project>{8f65ed79-434e-42ed-b214-f787ace6659f}</Project>
+      <Name>CFX</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PanelAbout\PanelAbout.csproj">
+      <Project>{0a4286de-3e23-4bea-8b69-722373a66f34}</Project>
+      <Name>PanelAbout</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\tstCkBox\tstCkBox.csproj">
+      <Project>{1B7F5D15-73EF-441A-9684-B28574C92B65}</Project>
+      <Name>tstCkBox</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UC_UpConveyorAutoFlow\UC_UpConveyorAutoFlow.csproj">
+      <Project>{0186a9d6-abe8-40ce-8921-67f4dee8a316}</Project>
+      <Name>UC_UpConveyorAutoFlow</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\menu.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\logout.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Operation\initial.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Operation\start.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Operation\alarmreset.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Setup\Opne.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Setup\Save.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Setup\Cancel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Setup\New.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Menu\move.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\green3.png" />
+    <None Include="Resources\gray3.png" />
+    <None Include="LG  logo.bmp" />
+    <Content Include="HistoryVersion.txt" />
+    <Content Include="LG.ico" />
+    <None Include="Resources\1NPlogo.bmp" />
+    <None Include="Assets\Operation\Green.png" />
+    <None Include="Assets\Operation\Red.png" />
+    <None Include="Service References\wsSelectBySerialNumber\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\wsSelectBySerialNumber\configuration.svcinfo" />
+    <None Include="Service References\wsSelectBySerialNumber\configuration91.svcinfo" />
+    <None Include="Service References\wsSelectByNameAssembly\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\wsSelectByNameAssembly\configuration.svcinfo" />
+    <None Include="Service References\wsSelectByNameAssembly\configuration91.svcinfo" />
+    <None Include="Service References\wsBoardHistoryReport\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\wsBoardHistoryReport\configuration.svcinfo" />
+    <None Include="Service References\wsBoardHistoryReport\configuration91.svcinfo" />
+    <None Include="Service References\wsCheckPoint\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\wsCheckPoint\configuration.svcinfo" />
+    <None Include="Service References\wsCheckPoint\configuration91.svcinfo" />
+    <None Include="Resources\Curing_Specials\Rack_Presentation.png" />
+    <None Include="Resources\MatrixInfo.PNG" />
+    <None Include="Resources\09-Automation Logo_GLOW.png" />
+    <None Include="Resources\StructureModular.png" />
+    <None Include="Resources\MainForm\info_2.png" />
+    <None Include="Resources\MainForm\log_2.png" />
+    <None Include="Resources\MainForm\log2.png" />
+    <None Include="Resources\MainForm\about.png" />
+    <None Include="Resources\MainForm\log.png" />
+    <None Include="Resources\MotionControl\Vacuum.png" />
+    <None Include="Resources\MotionControl\home.png" />
+    <None Include="Resources\MotionControl\Gripper.png" />
+    <None Include="Resources\MotionControl\Cylinder.png" />
+    <None Include="Resources\MotionControl\Brake.png" />
+    <None Include="Resources\MotionControl\Blow.png" />
+    <None Include="Resources\MainForm\hide.png" />
+    <None Include="Resources\MainForm\daynight.png" />
+    <None Include="Resources\Interface\btnAxisUJogN_BackgroundImage.png" />
+    <None Include="Resources\VPRO\info.png" />
+    <None Include="Resources\VPRO\cognex.png" />
+    <None Include="Resources\VPRO\CCDSetup.png" />
+    <None Include="Resources\Interface\Up1.png" />
+    <None Include="Resources\Interface\up.png" />
+    <None Include="Resources\Interface\Stop2.png" />
+    <None Include="Resources\Interface\Stop1.png" />
+    <None Include="Resources\Interface\Stop_Disable.png" />
+    <None Include="Resources\Interface\Stop.png" />
+    <None Include="Resources\Interface\rotate_right.png" />
+    <None Include="Resources\Interface\rotate_left.png" />
+    <None Include="Resources\Interface\right.png" />
+    <None Include="Resources\Interface\Play_Disable.png" />
+    <None Include="Resources\Interface\Play.png" />
+    <None Include="Resources\Interface\left.png" />
+    <None Include="Resources\Interface\Down1.png" />
+    <None Include="Resources\Interface\down.png" />
+    <None Include="Resources\hide.png" />
+    <None Include="Resources\daynight1.png" />
+    <None Include="Resources\daynight.png" />
+    <None Include="Resources\day.png" />
+    <None Include="Resources\night.png" />
+    <None Include="Resources\09-Automation Logo.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.8">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4.8 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\wsBoardHistoryReport\" />
+    <WCFMetadataStorage Include="Service References\wsCheckPoint\" />
+    <WCFMetadataStorage Include="Service References\wsSelectByNameAssembly\" />
+    <WCFMetadataStorage Include="Service References\wsSelectBySerialNumber\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\Logos\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -1,0 +1,17 @@
+﻿StationName: Bop Load PCB
+Version: 1.1.0.10
+Changes:
+01. 2/6/2023, Ren: ProcessDataForm, disable custom edit, add, delete, order the grid
+02. 2/6/2023, Ren: ProcessDataForm, column sort mode = programatic
+03. 2/6/2023, Ren: ProcessDataForm, Grid display adjust(add height)
+04. 2/6/2023, Ren: ProcessDataForm, history record display
+05. 2/6/2023, Ren: ProcessDataForm, ResultUpdate, RemoveAt functions add exception catch
+06. 2/6/2023, Ren: Align the time format for displaying or storing
+07. 2/6/2023, Ren: Cycle time display as seconds
+
+Version: 1.1.0.11
+Changes:
+01. 2/6/2023, Ren: Gripper picking pcb NG logic adjust(PCB dropped, not load to product or NG buffer)
+01. 2/20/2023, UI Result
+20230320 add alarm log
+20230324 pruduct flow
