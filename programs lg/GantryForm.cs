@@ -541,7 +541,14 @@ namespace Alpha._0.ModuleForms
             //  RestartProcess() del SDK, que esta AcuraLibrary.dll no tiene.
             if (bRestartQuickActive)
             {
-                npFlowChart39.TaskRun();
+                //MOD@@ Guillermo Carrillo - mismo lock que Run(), ver comentario alli.
+                //  Sin esto, este TaskRun() (hilo AlwaysRUnThreads) puede llamar a
+                //  Robot.WriteToEpson/ReadFromEpson al mismo tiempo que el flujo
+                //  normal (hilo FlowControlThread), corrompiendo IsIdle/Queue_Recive.
+                lock (SysPara.StatusLock)
+                {
+                    npFlowChart39.TaskRun();
+                }
             }
 
             //BConnect();
@@ -599,9 +606,20 @@ namespace Alpha._0.ModuleForms
         {
             if (!SysPara.bBypassMode)
             {
-                flowChart10.TaskRun();
-                flowChart87.TaskRun();
-                npFlowChart53.TaskRun();
+                //MOD@@ Guillermo Carrillo - lock de comunicacion con el Epson
+                //  Run() corre en FlowControlThread y AlwaysRun() en AlwaysRUnThreads,
+                //  hilos distintos que comparten el mismo objeto Robot. WriteToEpson/
+                //  ReadFromEpson (Classes/Epson.cs) no tienen lock propio, asi que si el
+                //  reinicio rapido (npFlowChart39, empujado desde AlwaysRun) escribe al
+                //  mismo tiempo que este flujo normal, se corrompen IsIdle/Queue_Recive
+                //  y el robot se queda trabado o se ve como desconectado. Se usa el mismo
+                //  SysPara.StatusLock que ya usa ReadPositionFromEpson.
+                lock (SysPara.StatusLock)
+                {
+                    flowChart10.TaskRun();
+                    flowChart87.TaskRun();
+                    npFlowChart53.TaskRun();
+                }
             }
 
 
@@ -1719,6 +1737,24 @@ namespace Alpha._0.ModuleForms
         //  robot llega limpio a posicion segura.
         public void RestartProcessQuick()
         {
+            //MOD@@ Guillermo Carrillo - auto-pausa antes del reinicio rapido
+            //  El flujo automatico (flowChart10, flowChart87, npFlowChart53)
+            //  comparte el mismo socket con el robot. Si esta cadena escribe
+            //  al mismo tiempo, el protocolo se desincroniza y sale el error
+            //  de comunicacion. Antes se le pedia al operador presionar PAUSA
+            //  primero; ahora se llama directo al mismo boton (MiddleLayer.MainF.
+            //  btnPause_Click, igual que ya se hace con btnStop_Click en otras
+            //  partes de este archivo) para que REINICIO RAPIDO pause por si
+            //  solo. Pausa usa MiddleLayer.StopRun(), que apaga SysPara.SystemRun
+            //  sin tocar SystemInitialOk, asi el boton Start sigue habilitado
+            //  despues del reinicio. El lock en Run()/AlwaysRun() (ver arriba)
+            //  ya cubre la ventana de tiempo entre este click y que el hilo del
+            //  flujo automatico note el cambio de SystemRun.
+            if (SysPara.SystemRun)
+            {
+                MiddleLayer.MainF.btnPause_Click(null, null);
+            }
+
             if (bRestartQuickActive)
             {
                 MessageBox.Show("El reinicio rapido ya esta en proceso.");
@@ -1734,6 +1770,16 @@ namespace Alpha._0.ModuleForms
             {
                 return;
             }
+
+            //MOD@@ Guillermo Carrillo - limpia estado colgado del Epson
+            //  Si el flujo normal quedo a medio contestar cuando se puso en
+            //  pausa (IsIdle=true esperando una respuesta que ya no va a
+            //  llegar porque el flujo dejo de correr), el reinicio rapido
+            //  heredaba ese estado y su primer WriteToEpson nunca se enviaba:
+            //  se veia como robot trabado/desconectado. Mismo patron de
+            //  limpieza que ya usa Robot.ReConnect().
+            Robot.IsIdle = false;
+            Robot.Queue_Recive.Clear();
 
             MiddleLayer.LogF.AddLog(LogType.Production,
                 "Reinicio rapido: inicia cadena npFlowChart39.", true);
@@ -9711,12 +9757,16 @@ namespace Alpha._0.ModuleForms
                 //MOD@@ Guillermo Carrillo - fin del reinicio rapido
                 //  El robot llego limpio a posicion segura: ya no trae piezas,
                 //  se apaga la bandera para que AlwaysRun deje de empujar.
+                //  NO MessageBox aqui: este nodo corre en AlwaysRUnThreads, un
+                //  hilo que no es el de UI. Un MessageBox.Show() ahi crea su
+                //  propio message loop en ese hilo y lo deja bloqueado (sin
+                //  pintarse bien, sin foco), viendose exactamente como "el
+                //  robot llega y se queda sin avanzar ni alarmar".
                 if (bRestartQuickActive)
                 {
                     bRestartQuickActive = false;
                     MiddleLayer.LogF.AddLog(LogType.Production,
                         "Reinicio rapido: terminado, robot en posicion segura.", true);
-                    MessageBox.Show("Reinicio rapido completado.");
                 }
                 return FCResultType.CASE1;
             }
