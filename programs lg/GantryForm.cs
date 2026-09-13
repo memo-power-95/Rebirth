@@ -3183,10 +3183,21 @@ namespace Alpha._0.ModuleForms
 
                         if (coverIsTilt)
                         {
-                            //MOD@@ Guillermo Carrillo - alarma 1211: confirmacion por 2 de 3 lecturas de CoverIstilt
-                            // ---- reintento 1211: confirmar con 2 lecturas mas ----
+                            //MOD@@ Guillermo Carrillo - alarma 1211: confirmacion por votacion
+                            //  Toma TILT_TOTAL lecturas y alarma solo si al menos
+                            //  TILT_UMBRAL coinciden. Para ajustar la sensibilidad
+                            //  basta cambiar estos dos numeros:
+                            //    mas tolerante -> subir TILT_UMBRAL
+                            //    mas estricto  -> bajar TILT_UMBRAL
+                            //  Revisar el log "CoverIstilt votos": si sale seguido
+                            //  el maximo (5/5), el problema no es ruido de captura
+                            //  sino el umbral de VisionPro o tapas realmente ladeadas,
+                            //  y agregar lecturas no va a ayudar.
+                            const int TILT_TOTAL = 5;
+                            const int TILT_UMBRAL = 3;
+
                             int tiltVotes = 1;
-                            for (int t = 0; t < 2; t++)
+                            for (int t = 0; t < TILT_TOTAL - 1; t++)
                             {
                                 Thread.Sleep(150);
                                 if (!H1_DischargePos.TakePicture(exposure)) { continue; }
@@ -3195,10 +3206,10 @@ namespace Alpha._0.ModuleForms
                             }
 
                             MiddleLayer.LogF.AddLog(LogType.Production,
-                                "CoverIstilt votos: " + tiltVotes + "/3",
+                                "CoverIstilt votos: " + tiltVotes + "/" + TILT_TOTAL,
                                 SysPara.bEnableGeneralSaveLog);
 
-                            if (tiltVotes >= 2)
+                            if (tiltVotes >= TILT_UMBRAL)
                             {
                                 //SysPara.NPShowAlarm("1211");        //Cover is tilt
                                 SDKKernal.ShowAlarm("1211");
@@ -8707,6 +8718,9 @@ namespace Alpha._0.ModuleForms
 
         private FCResultType npFlowChart23_FlowRun(object sender, EventArgs e)
         {
+            //MOD@@ Guillermo Carrillo - salto del reinicio rapido
+            //  Evita que la cadena se atore en IDLE esperando OFFLINE_REASON_OK
+            if (bRestartQuickActive) { return FCResultType.NEXT; }
             if (SysPara.EnableMes)
             {
                 if (!MESLib.CommParas.MesManager.LGIT_SETCODE_OFFLINE_REASON_OK)
@@ -8720,6 +8734,9 @@ namespace Alpha._0.ModuleForms
 
         private FCResultType npFlowChart22_FlowRun(object sender, EventArgs e)
         {
+            //MOD@@ Guillermo Carrillo - salto del reinicio rapido
+            //  Evita que la cadena se atore en IDLE esperando IDLE_REASON_OK
+            if (bRestartQuickActive) { return FCResultType.NEXT; }
             if (SysPara.EnableMes)
             {
                 if (MESLib.CommParas.MesManager.LGIT_SETCODE_IDLE_REASON_OK)
@@ -8749,6 +8766,9 @@ namespace Alpha._0.ModuleForms
 
         private FCResultType npFlowChart20_FlowRun(object sender, EventArgs e)
         {
+            //MOD@@ Guillermo Carrillo - salto del reinicio rapido
+            //  Evita que la cadena se atore en IDLE esperando OP_CALL_OK
+            if (bRestartQuickActive) { return FCResultType.NEXT; }
             if (SysPara.EnableMes)
             {
                 if (MESLib.CommParas.MesManager.LGIT_OP_CALL_OK)
