@@ -534,19 +534,6 @@ namespace Alpha._0.ModuleForms
         }
         public override void AlwaysRun()
         {
-            //MOD@@ Guillermo Carrillo - motor del reinicio rapido
-            //  AlwaysRun lo llama FlowControl en cada ciclo, este o no corriendo
-            //  la maquina. Aqui se empuja la cadena npFlowChart39 mientras la
-            //  bandera bRestartQuickActive este encendida. Sustituye al
-            //  RestartProcess() del SDK, que esta AcuraLibrary.dll no tiene.
-            //  flowChart1_5 es el nodo "Reset robot" de la cadena de
-            //  inicializacion: entrar ahi salta archivos, MES, escaner y
-            //  camaras, y conserva todo el resto hasta npFlowChart1.
-            if (bRestartQuickActive)
-            {
-                flowChart1_5.TaskRun();
-            }
-
             //BConnect();
             //if (bSubscribe)
             //{
@@ -1711,21 +1698,17 @@ namespace Alpha._0.ModuleForms
 
         #region Initial
         //MOD@@ Guillermo Carrillo - Reinicio rapido
-        //  Ejecuta la MISMA cadena de la inicializacion completa, pero entrando
-        //  en flowChart1_5 ("Reset robot") en vez de en fc_InitialStart. Con eso
-        //  se saltan: delete files, wait delete, Initial MES, OFFLINE,
-        //  IDLE REASON, OP CALL, ONLINE REPORT, Connect scanner y
-        //  Close CCDlight/connect CCD.
-        //  A partir de flowChart1_5 la cadena corre completa y sin cambios:
-        //    1_5 Reset robot -> 1_6 Start robot -> 1_7 Wait reset finish
-        //    -> 73/72 Set Home Speed -> 1_8 R1 Goto safety
-        //    -> 6 Wait R1 on safety (CASE1 -> flowChart95, descarga a NG)
-        //    -> 45/27 Set Work Speed -> 71/70 Set Vision Enable
-        //    -> 7 Judge feeder alarm -> 8 Initial MES -> npFlowChart1 Initial finish
-        //  npFlowChart1 restaura SystemInitialOk y RIniRet, por eso no hay que
-        //  tocarlas a mano.
-        //  La cadena se empuja desde AlwaysRun() porque esta AcuraLibrary.dll
-        //  no declara RestartProcess() como virtual.
+        //  Usa la MISMA ruta del proveedor: MainForm.fnInitial(), que resetea
+        //  todos los modulos (Conveyor, Process, Scanner), reinicia el
+        //  temporizador del Epson y arranca el ciclo. Lo unico que cambia es
+        //  que la bandera bRestartQuickActive hace que tres nodos lentos de la
+        //  cadena del Gantry devuelvan NEXT de inmediato:
+        //    npFlowChart49  delete files / FilesMonitor
+        //    flowChart1_2   Connect scanner
+        //    flowChart1_3   Close CCDlight / connect CCD (3 fotos de prueba)
+        //  Todo lo demas corre igual que una inicializacion completa: reset y
+        //  arranque del robot, goto safety, descarga a NG, MES y banderas.
+        //  La bandera se apaga en npFlowChart1 (Initial finish).
         public void RestartProcessQuick()
         {
             if (bRestartQuickActive)
@@ -1734,22 +1717,10 @@ namespace Alpha._0.ModuleForms
                 return;
             }
 
-            //MOD@@ Guillermo Carrillo - guarda de concurrencia con el Epson
-            //  El flujo automatico (flowChart10, flowChart87, npFlowChart53)
-            //  comparte el mismo socket con el robot. Si esta cadena escribe
-            //  al mismo tiempo, el protocolo se desincroniza y sale el error
-            //  de comunicacion. Con PAUSA se detiene el flujo sin apagar
-            //  SystemInitialOk, asi el boton Start sigue habilitado despues.
-            if (SysPara.SystemRun)
-            {
-                MessageBox.Show("Presione PAUSA antes del reinicio rapido.\n\nSecuencia: PAUSA -> REINICIO RAPIDO -> START");
-                return;
-            }
-
             reintento.Dispose();
             reintento = new Reintento();
             reintento.fnSetTextMessageNShow(
-                "REINICIO RAPIDO. El robot ira a posicion segura y descargara a NG las piezas que traiga. Confirme que el area esta despejada.",
+                "REINICIO RAPIDO. Se hara la inicializacion saltando escaner y camaras. Confirme que el area esta despejada.",
                 true, false, true);
             if (reintento.dResult != DialogResult.Yes)
             {
@@ -1757,9 +1728,8 @@ namespace Alpha._0.ModuleForms
             }
 
             MiddleLayer.LogF.AddLog(LogType.Production,
-                "Reinicio rapido: inicia cadena npFlowChart39.", true);
+                "Reinicio rapido: inicia, se saltan escaner y camaras.", true);
 
-            flowChart1_5.TaskReset();
             bRestartQuickActive = true;
         }
 
@@ -1817,6 +1787,8 @@ namespace Alpha._0.ModuleForms
         //connect scanner
         private FCResultType flowChart1_2_FlowRun(object sender, EventArgs e)
         {
+            //MOD@@ Guillermo Carrillo - salto del reinicio rapido: escaner ya conectado
+            if (bRestartQuickActive) { return FCResultType.NEXT; }
             bool status1 = ConnectBarcode();
             if (status1)
             {
@@ -1836,6 +1808,8 @@ namespace Alpha._0.ModuleForms
         //close ccd light
         private FCResultType flowChart1_3_FlowRun(object sender, EventArgs e)
         {
+            //MOD@@ Guillermo Carrillo - salto del reinicio rapido: camaras ya probadas
+            if (bRestartQuickActive) { OB_RobotLight.Off(); return FCResultType.NEXT; }
             OB_RobotLight.Off();
             //SettingData - MSet.NGCCDCheckExpTime
             double exposure = GetSettingValue("MSet", "NGCCDCheckExpTime");
@@ -10164,6 +10138,8 @@ namespace Alpha._0.ModuleForms
 
         private FCResultType npFlowChart49_FlowRun(object sender, EventArgs e)
         {
+            //MOD@@ Guillermo Carrillo - salto del reinicio rapido
+            if (bRestartQuickActive) { return FCResultType.NEXT; }
             GC.Collect();
             string processName = "FilesMonitor"; // 不包括 .exe
             System.Diagnostics.Process[] processes = System.Diagnostics.Process.GetProcessesByName(processName);
