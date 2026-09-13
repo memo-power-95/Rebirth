@@ -275,6 +275,8 @@ namespace Alpha._0.ModuleForms
 
 
         Reintento reintento = new Reintento();
+        //MOD@@ Guillermo Carrillo - bandera del reinicio rapido
+        private volatile bool bRestartQuickActive = false;
 
         double[] robotPos = new double[3];
 
@@ -532,6 +534,16 @@ namespace Alpha._0.ModuleForms
         }
         public override void AlwaysRun()
         {
+            //MOD@@ Guillermo Carrillo - motor del reinicio rapido
+            //  AlwaysRun lo llama FlowControl en cada ciclo, este o no corriendo
+            //  la maquina. Aqui se empuja la cadena npFlowChart39 mientras la
+            //  bandera bRestartQuickActive este encendida. Sustituye al
+            //  RestartProcess() del SDK, que esta AcuraLibrary.dll no tiene.
+            if (bRestartQuickActive)
+            {
+                npFlowChart39.TaskRun();
+            }
+
             //BConnect();
             //if (bSubscribe)
             //{
@@ -1695,82 +1707,41 @@ namespace Alpha._0.ModuleForms
         }
 
         #region Initial
-        //MOD@@ Reinicio rapido - portado de Bottom station <RRP_0001>
+        //MOD@@ Guillermo Carrillo - Reinicio rapido
+        //  Dispara la cadena npFlowChart39, que ya existia en el proyecto pero
+        //  ningun nodo la invocaba. Equivale al RestartProcess de la maquina
+        //  Bottom Station (RRP_0001, Aaron Estrada, marzo 2026), pero como esta
+        //  AcuraLibrary.dll no tiene ese metodo virtual, la cadena se empuja
+        //  desde AlwaysRun() con la bandera bRestartQuickActive.
+        //  Secuencia: Reset Para -> R1 Goto Safety -> Wait R1 on safety
+        //  -> Get NG buffer -> R1 Goto NG CDD -> CCD take picture
+        //  -> R1 Goto NG buffer -> Refesh NG buffer, repitiendo hasta que el
+        //  robot llega limpio a posicion segura.
         public void RestartProcessQuick()
         {
-            if (SysPara.SystemRun)
+            if (bRestartQuickActive)
             {
-                MessageBox.Show("Detenga la maquina antes de usar el reinicio rapido.");
+                MessageBox.Show("El reinicio rapido ya esta en proceso.");
                 return;
             }
 
             reintento.Dispose();
             reintento = new Reintento();
             reintento.fnSetTextMessageNShow(
-                "REINICIO RAPIDO. Se limpiara el estado del proceso. Confirme que no hay PCB en los grippers.",
+                "REINICIO RAPIDO. El robot ira a posicion segura y descargara a NG las piezas que traiga. Confirme que el area esta despejada.",
                 true, false, true);
             if (reintento.dResult != DialogResult.Yes)
             {
                 return;
             }
 
-            try
-            {
-                throwingjudge = false;
-                CCDAlogrithmStatus = false;
-                AssmbleCCDAlogStatus = false;
-                isPickProduceOK = true;
-                curPalletCode = "";
-                curR1HaveNum = 0;
-                SysPara.RIniRet = false;
-                SysPara.JAGStarytEvent.Reset();
-                SysPara.OverPressureab = false;
-                SysPara.OverPressurebc = false;
-                SysPara.Que_ProductCode_PickPos.Clear();
-                SysPara.Que_pallet_Code.Clear();
-                SysPara.Que_Product_pallet_Code.Clear();
-                SysPara.R1GrabCompeletStatus = false;
-                SysPara.ScanCount = 0;
-                SysPara.R1ScanResult = false;
-                SysPara.R1AssembStatus = false;
-                MiddleLayer.ConveyorF.UpConveyorAutoFlow.NotifyAssembly = false;
-                SysPara.ProductCount = 12;
-                SysPara.FeederProductCount = 42;
-                SysPara.R1AssembResult = false;
-                SysPara.R1AssembCompeletStatus = false;
-                MiddleLayer.ConveyorF.UpConveyorAutoFlow.AssembCompeletStatus = false;
-                SysPara.TempAssembCompeletStatus = false;
-                SysPara.PressureCompelet = false;
-                SysPara.RobotPressureCompelet = false;
-                scannerReuslt.Clear();
-                CCDReuslt.Clear();
-                queCCDPosition.Clear();
-                scanCount = 0;
-                RunTM.Restart();
-                curProductCount = 0;
-                haveSendCodeToMES = true;
-                palletUpResult.Clear();
-                palletDownResult.Clear();
-                InitPickIndex(GetRecipeValue("RSet", "FeederPickIndex"));
+            MiddleLayer.LogF.AddLog(LogType.Production,
+                "Reinicio rapido: inicia cadena npFlowChart39.", true);
 
-                MesTestList = new List<bool>() { true, true, true, true, true, true,
-                                                 true, true, true, true, true, true };
-                for (int i = 0; i < PCBCode.Length; i++)
-                {
-                    PCBCode[i] = "NA";
-                }
-
-                MiddleLayer.LogF.AddLog(LogType.Production,
-                    "Reinicio rapido ejecutado. Estado de proceso limpiado.", true);
-                MessageBox.Show("Reinicio rapido completado. Puede iniciar produccion.");
-            }
-            catch (Exception ex)
-            {
-                MiddleLayer.LogF.AddLog(LogType.Production,
-                    "Error en reinicio rapido: " + ex.Message, true);
-                MessageBox.Show("Error en reinicio rapido: " + ex.Message);
-            }
+            npFlowChart39.TaskReset();
+            bRestartQuickActive = true;
         }
+
         private FCResultType fc_InitialStart_FlowRun(object sender, EventArgs e)
         {
             throwingjudge = false;
@@ -2198,6 +2169,7 @@ namespace Alpha._0.ModuleForms
 
             scannerReuslt.Add(SysPara.R1ScanResult);
 
+            //MOD@@ Guillermo Carrillo - guarda de indice: MaterialID_Array
             if (SysPara.Que_ProductCode_PickPos.Count < MaterialID_Array.Length)
             {
                 MaterialID_Array[SysPara.Que_ProductCode_PickPos.Count] = SysPara.QRCode1;
@@ -2212,6 +2184,7 @@ namespace Alpha._0.ModuleForms
             }        //if pick success,Enqueue in Queue
             else                                                                                //if pick fail,replace the first
             {
+                //MOD@@ Guillermo Carrillo - guarda de indice: Que_ProductCode_PickPos
                 if (SysPara.Que_ProductCode_PickPos.Count > 0
                     && curR1HaveNum >= 0
                     && curR1HaveNum < SysPara.Que_ProductCode_PickPos.Count)
@@ -2247,6 +2220,7 @@ namespace Alpha._0.ModuleForms
 
                 if (!scannerReuslt.Contains(true))
                 {
+                    //MOD@@ Guillermo Carrillo - alarma 1302: dialogo de reintento de lectura QR
                     SysPara.NPShowAlarm("1302");
                     reintento.Dispose();
                     reintento = new Reintento();
@@ -2532,6 +2506,7 @@ namespace Alpha._0.ModuleForms
                             // 更新队列
                             scannerReuslt.Add(SysPara.R1ScanResult);
                             QRCode.Add(SysPara.QRCode1);
+                            //MOD@@ Guillermo Carrillo - guarda de indice: CCDReuslt vs MaterialID_Array
                             if (CCDReuslt.Count < MaterialID_Array.Length)
                             {
                                 MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
@@ -2604,11 +2579,13 @@ namespace Alpha._0.ModuleForms
 
             //scannerReuslt.Add(false);
 
+            //MOD@@ Guillermo Carrillo - guarda de indice: scannerReuslt
             if (CCDReuslt.Count < scannerReuslt.Count && scannerReuslt[CCDReuslt.Count])
             {
 
                 if (!CCDAlogrithmStatus)
                 {
+                    //MOD@@ Guillermo Carrillo - guarda de indice: CCDReuslt vs MaterialID_Array
                     if (CCDReuslt.Count < MaterialID_Array.Length)
                     {
                         MaterialID_Array[CCDReuslt.Count] = "";
@@ -2620,6 +2597,7 @@ namespace Alpha._0.ModuleForms
             }
             else
             {
+                //MOD@@ Guillermo Carrillo - guarda de indice: CCDReuslt vs MaterialID_Array
                 if (CCDReuslt.Count < MaterialID_Array.Length)
                 {
                     MaterialID_Array[CCDReuslt.Count] = "";
@@ -2751,6 +2729,7 @@ namespace Alpha._0.ModuleForms
                     curR1HaveNum = pickPos.Count();
                 }
 
+                //MOD@@ Guillermo Carrillo - guarda de indice: pickPos[curR1HaveNum-1] (causa del indice -1)
                 if (curR1HaveNum >= 1
                     && curR1HaveNum <= pickPos.Count()
                     && curR1HaveNum <= CCDReuslt.Count)
@@ -2997,6 +2976,7 @@ namespace Alpha._0.ModuleForms
 
                             return FCResultType.NEXT;
                         }
+                        //MOD@@ Guillermo Carrillo - guarda de indice: MesTestList
                         if (SysPara.Que_Product_pallet_Code.Count < MesTestList.Count && !MesTestList[SysPara.Que_Product_pallet_Code.Count]/* && SysPara.Que_Product_pallet_Code.Count < 3*/)
                         {
                             //AssmbleCCDAlogStatus = false;
@@ -3015,6 +2995,7 @@ namespace Alpha._0.ModuleForms
                         else
                         {
 
+                            //MOD@@ Guillermo Carrillo - guarda de indice: MESReportResult[gripperIndex-1]
                             if (gripperIndex >= 1 && gripperIndex <= SysPara.MESReportResult.Length && !SysPara.MESReportResult[gripperIndex - 1])
                             {
                                 bMESPCBIsNG = true;
@@ -3191,6 +3172,7 @@ namespace Alpha._0.ModuleForms
                     SaveImage image = new SaveImage();
                     image.Image = new Bitmap(cogRecDisp_H5_Recipe.CreateContentBitmap(CogDisplayContentBitmapConstants.Display));
                     image.Timer = DateTime.Now.ToString("yyyyMMddHHmmss");
+                    //MOD@@ Guillermo Carrillo - alarma 1211: bloque try del reintento de camara
                     try
                     {
                         image.PalletQRCode = MESLib.CommParas.MesManager.TRAY_POSITION_QRCODEs[CCDReuslt.Count * 2];
@@ -3206,6 +3188,7 @@ namespace Alpha._0.ModuleForms
 
                         if (coverIsTilt)
                         {
+                            //MOD@@ Guillermo Carrillo - alarma 1211: confirmacion por 2 de 3 lecturas de CoverIstilt
                             // ---- reintento 1211: confirmar con 2 lecturas mas ----
                             int tiltVotes = 1;
                             for (int t = 0; t < 2; t++)
@@ -3501,6 +3484,7 @@ namespace Alpha._0.ModuleForms
 
 
 
+                //MOD@@ Guillermo Carrillo - guarda de indice: Que_Product_pallet_Code
                 if (SysPara.Que_Product_pallet_Code.Count < (Int16)GetRecipeValue("RSet", "PaaletProductCount") && SysPara.Que_Product_pallet_Code.Count < MesTestList.Count && MesTestList[SysPara.Que_Product_pallet_Code.Count])
                 {
                     SysPara.ProductPalletCode.data = SysPara.PressureData.ToString();
@@ -5437,6 +5421,7 @@ namespace Alpha._0.ModuleForms
 
         private FCResultType flowChart63_FlowRun(object sender, EventArgs e)
         {
+            //MOD@@ Guillermo Carrillo - guarda de indice: curR1HaveNum
             if (curR1HaveNum >= 0
                 && curR1HaveNum < CCDReuslt.Count
                 && curR1HaveNum < scannerReuslt.Count
@@ -5941,6 +5926,7 @@ namespace Alpha._0.ModuleForms
                     {
 
                         int num = InvertOrder(SysPara.Que_ProductCode_PickPos.Count);
+                        //MOD@@ Guillermo Carrillo - guarda de indice: FeederImages[num-1]
                         if (num < 1 || num > FeederImages.Count) { return; }
                         string saveImgPath = MiddleLayer.GantryF.GetSettingValue("PSet", "SaveImagePath") + "\\";
                         string ImgSaveName = string.Format(@"{0}_{1}_NA_NA_{2}_{3}.bmp",
@@ -5950,6 +5936,7 @@ namespace Alpha._0.ModuleForms
                            MiddleLayer.MesF2.GetSettingValue("PSet", "EQPID")
                            );
 
+                        //MOD@@ Guillermo Carrillo - guarda de indice: PCBCode
                         if (SysPara.Que_Product_pallet_Code.Count < PCBCode.Length)
                         {
                             PCBCode[SysPara.Que_Product_pallet_Code.Count] = FeederImages[num - 1].PCBQRCode;
@@ -6666,6 +6653,7 @@ namespace Alpha._0.ModuleForms
             if (Robot.WriteToEpson("016", SysPara.ngPos, string.Format("{0:d2}", gripperIndex), 20000))
             {
                 int QRCodeCount = gripperIndex; /*InvertOrder(SysPara.Que_ProductCode_PickPos.Count);*/
+                //MOD@@ Guillermo Carrillo - guarda de indice: QRCode[gripperIndex-1]
                 string QR = (gripperIndex >= 1 && gripperIndex <= QRCode.Count) ? QRCode[gripperIndex - 1] : "";
 
                 string str = string.Format(QRCodeCount.ToString() + "# Product,QRCode:{0},NGIndex:" + SysPara.ngPos, QR);
@@ -7976,6 +7964,7 @@ namespace Alpha._0.ModuleForms
                         foreach (var p in CurrentPCBList)
                         {
                             int index = p.Key;
+                            //MOD@@ Guillermo Carrillo - guarda de indice: palletResultCopy[index]
                             if (index >= 0 && index < palletResultCopy.Count)
                             {
                                 palletResultCopy[index] = true;
@@ -8031,6 +8020,7 @@ namespace Alpha._0.ModuleForms
                             foreach (var p in CurrentPCBList)
                             {
                                 int index = p.Key;
+                                //MOD@@ Guillermo Carrillo - guarda de indice: palletResultCopy[index]
                                 if (index >= 0 && index < palletResultCopy.Count)
                                 {
                                     palletResultCopy[index] = true;
@@ -8098,6 +8088,7 @@ namespace Alpha._0.ModuleForms
                         foreach (var p in CurrentPCBList)
                         {
                             int index = p.Key;
+                            //MOD@@ Guillermo Carrillo - guarda de indice: palletResultCopy[index]
                             if (index >= 0 && index < palletResultCopy.Count)
                             {
                                 palletResultCopy[index] = true;
@@ -8153,6 +8144,7 @@ namespace Alpha._0.ModuleForms
                             foreach (var p in CurrentPCBList)
                             {
                                 int index = p.Key;
+                                //MOD@@ Guillermo Carrillo - guarda de indice: palletResultCopy[index]
                                 if (index >= 0 && index < palletResultCopy.Count)
                                 {
                                     palletResultCopy[index] = true;
@@ -9716,6 +9708,16 @@ namespace Alpha._0.ModuleForms
             if (ret == 1)
             {
                 OB_FeederSafetySignal.On();
+                //MOD@@ Guillermo Carrillo - fin del reinicio rapido
+                //  El robot llego limpio a posicion segura: ya no trae piezas,
+                //  se apaga la bandera para que AlwaysRun deje de empujar.
+                if (bRestartQuickActive)
+                {
+                    bRestartQuickActive = false;
+                    MiddleLayer.LogF.AddLog(LogType.Production,
+                        "Reinicio rapido: terminado, robot en posicion segura.", true);
+                    MessageBox.Show("Reinicio rapido completado.");
+                }
                 return FCResultType.CASE1;
             }
             else if (ret == 0)
@@ -9727,12 +9729,14 @@ namespace Alpha._0.ModuleForms
                 {
                     return FCResultType.NEXT;
                 }
-                else { SysPara.NPShowAlarm("1635"); return FCResultType.IDLE; }
+                //MOD@@ Guillermo Carrillo - corta el reinicio rapido si hay alarma
+                else { bRestartQuickActive = false; SysPara.NPShowAlarm("1635"); return FCResultType.IDLE; }
 
             }
             else if (InitTM.On(SysPara.TimeOutSec))
             {
-
+                //MOD@@ Guillermo Carrillo - corta el reinicio rapido por timeout
+                bRestartQuickActive = false;
                 SysPara.NPShowAlarm("1635"); return FCResultType.IDLE;
             }        //R1 timeout
             else
@@ -10415,6 +10419,7 @@ namespace Alpha._0.ModuleForms
 
                         scannerReuslt.Add(SysPara.R1ScanResult);
                         QRCode.Add(SysPara.QRCode1);
+                        //MOD@@ Guillermo Carrillo - guarda de indice: CCDReuslt vs MaterialID_Array
                         if (CCDReuslt.Count < MaterialID_Array.Length)
                         {
                             MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
@@ -10439,6 +10444,7 @@ namespace Alpha._0.ModuleForms
 
                     scannerReuslt.Add(SysPara.R1ScanResult);
                     QRCode.Add(SysPara.QRCode1);
+                    //MOD@@ Guillermo Carrillo - guarda de indice: CCDReuslt vs MaterialID_Array
                     if (CCDReuslt.Count < MaterialID_Array.Length)
                     {
                         MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
@@ -10462,6 +10468,7 @@ namespace Alpha._0.ModuleForms
 
                     scannerReuslt.Add(SysPara.R1ScanResult);
                     QRCode.Add(SysPara.QRCode1);
+                    //MOD@@ Guillermo Carrillo - guarda de indice: CCDReuslt vs MaterialID_Array
                     if (CCDReuslt.Count < MaterialID_Array.Length)
                     {
                         MaterialID_Array[CCDReuslt.Count] = SysPara.QRCode1;
