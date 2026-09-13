@@ -817,11 +817,15 @@ namespace Alpha
             }
         }
 
-        private void btnPause_Click(object sender, EventArgs e)
+        //MOD@@ Guillermo Carrillo - public para poder llamarlo desde
+        //  RestartProcessQuick() (GantryForm.cs) y pausar automaticamente
+        //  al darle a REINICIO RAPIDO. Mismo patron que btnStop_Click, que
+        //  ya era public por la misma razon (MiddleLayer.MainF.btnStop_Click).
+        public void btnPause_Click(object sender, EventArgs e)
         {
             MiddleLayer.LogF.AddLog(LogType.UserInterface, string.Format("User click Pause button. UserType:{0} UserName:{1}", SysPara.UserPermission.ToString(), SysPara.UserName), SysPara.bEnableGeneralSaveLog);
 
-            
+
             MiddleLayer.StopRun();
             if (SysPara.EnableMes && MESLib.CommParas.MesManager != null
                 && MESLib.CommParas.MesManager._connector != null &&
