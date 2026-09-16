@@ -492,6 +492,10 @@ class HistoryTab(ttk.Frame):
         self.cancel_button = ttk.Button(btns, text="Cancelar", command=self.app.cancel_event.set, state="disabled")
         self.cancel_button.pack(side="right")
 
+        # MOD@@ Guillermo Carrillo - status_var faltante, rompía restore_selected
+        self.status_var = tk.StringVar(value="")
+        ttk.Label(self, textvariable=self.status_var).pack(anchor="w", pady=(6, 0))
+
         self._targets = []
 
     def refresh_targets(self):
