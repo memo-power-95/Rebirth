@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -46,6 +47,10 @@ namespace Rebith.Tests
             Correr("Restaurar sobre original hace respaldo previo", RestaurarSobreOriginal);
             Correr("Programado: corre lo pendiente y reintenta tras error", ProgramadoPrueba);
             Correr("Importar respaldos hechos por la version en Python", ImportarPython);
+            Correr("Exportar a .zip: se abre sin Rebith y cada archivo coincide", ExportarZipPrueba);
+            Correr("Exportar a .zip: danado usa la replica; sin replica no deja .zip", ExportarZipDanado);
+            Correr("Exportar a .zip: guardas (deposito, reemplazar, cancelar)", ExportarZipGuardas);
+            Correr("Usuarios apagados de fabrica (tambien en depositos viejos)", UsuariosApagados);
 
             Console.WriteLine();
             Console.WriteLine("Pasaron {0}, fallaron {1}", pasadas, fallas);
@@ -551,6 +556,144 @@ namespace Rebith.Tests
         }
 
         /// <summary>Usa el codigo Python original (../backup_manager) para crear backups.db y storage.</summary>
+        private static ResultadoExportacion Exportar(RebithService s, SnapshotManifest m, string zip, bool reemplazar = false,
+            IProgress<ProgressInfo> progreso = null, CancellationToken cancelar = default(CancellationToken))
+        {
+            return s.ExportarZip(m.Id, zip, reemplazar, "tester", progreso, cancelar);
+        }
+
+        private static string ShaDe(Stream s)
+        {
+            using (var sha = SHA256.Create())
+            {
+                var sb = new StringBuilder();
+                foreach (byte b in sha.ComputeHash(s)) sb.Append(b.ToString("x2"));
+                return sb.ToString();
+            }
+        }
+
+        private static List<string> Temporales(string carpeta)
+        {
+            return Directory.Exists(carpeta) ? Directory.GetFiles(carpeta, "*.rebith-tmp").ToList() : new List<string>();
+        }
+
+        private static void ExportarZipPrueba(Carpeta c)
+        {
+            c.Escribir("config/maquina.xml", "<a>1</a>");
+            c.Escribir("ModuleData/Configuraci\u00f3n \u00f1.txt", "acentos en el nombre");
+            c.Escribir("vacio.txt", "");
+            c.Escribir("fotos/foto.jpg", new string('x', 5000));
+            var grande = new byte[3 * 1024 * 1024];
+            new Random(7).NextBytes(grande);
+            File.WriteAllBytes(Path.Combine(c.Origen, "programa.bin"), grande);
+            DateTime fecha = new DateTime(2025, 3, 4, 10, 20, 30, DateTimeKind.Utc);
+            File.SetLastWriteTimeUtc(Path.Combine(c.Origen, "config", "maquina.xml"), fecha);
+            RebithService s = Servicio(c);
+            SnapshotManifest m = Respaldar(s, Objetivo(s, c));
+
+            string zip = Path.Combine(c.Destino, "nube", "Maquina_respaldo");   // sin .zip: se agrega
+            ResultadoExportacion r = Exportar(s, m, zip);
+            Afirmar(r.Archivo.EndsWith("Maquina_respaldo.zip") && File.Exists(r.Archivo), "se creo el .zip con la extension");
+            Afirmar(r.Archivos == 5 && r.DesdeReplica == 0, "5 archivos, ninguno de la replica");
+            Afirmar(Temporales(Path.GetDirectoryName(r.Archivo)).Count == 0, "no quedan temporales");
+
+            string carpeta = Path.GetFileName(c.Origen);
+            using (ZipArchive z = ZipFile.OpenRead(r.Archivo))
+            {
+                Afirmar(z.Entries.Count == 5, "5 entradas en el .zip, hay " + z.Entries.Count);
+                foreach (FileEntry f in m.Files)
+                {
+                    ZipArchiveEntry e = z.GetEntry(carpeta + "/" + f.Path);
+                    Afirmar(e != null, "esta " + carpeta + "/" + f.Path);
+                    using (Stream st = e.Open()) Afirmar(ShaDe(st) == f.Hash, "misma huella en " + f.Path);
+                }
+                DateTime enZip = z.GetEntry(carpeta + "/config/maquina.xml").LastWriteTime.DateTime;
+                double diferencia = Math.Abs((enZip - fecha.ToLocalTime()).TotalSeconds);
+                Afirmar(diferencia <= 2, "fecha original en el .zip (diferencia " + diferencia + " s)");
+            }
+
+            // Extraido con la herramienta normal (como Windows): queda igual que el original.
+            string extraido = Path.Combine(c.Raiz, "extraido");
+            ZipFile.ExtractToDirectory(r.Archivo, extraido);
+            foreach (FileEntry f in m.Files)
+                Afirmar(Sha(Path.Combine(extraido, carpeta, f.Path.Replace('/', Path.DirectorySeparatorChar))) == f.Hash, "extraido igual: " + f.Path);
+            Afirmar(s.Auditoria.VerificarCadena().Integra, "auditoria integra con la exportacion");
+            Afirmar(s.Auditoria.Ultimos(5).Any(e => e.Accion == "exportacion_zip"), "la exportacion quedo en la auditoria");
+        }
+
+        private static void ExportarZipDanado(Carpeta c)
+        {
+            c.Escribir("a.txt", "contenido importante");
+            c.Escribir("b.txt", "otro contenido");
+            RebithService s = Servicio(c);
+            ConReplica(s, c);
+            SnapshotManifest m = Respaldar(s, Objetivo(s, c));
+            string hashA = m.Files.First(f => f.Path == "a.txt").Hash;
+            DanarObjeto(s, hashA);
+
+            ResultadoExportacion r = Exportar(s, m, Path.Combine(c.Destino, "con_replica.zip"));
+            Afirmar(r.DesdeReplica == 1, "1 contenido tomado de la replica");
+            using (ZipArchive z = ZipFile.OpenRead(r.Archivo))
+            using (Stream st = z.GetEntry(Path.GetFileName(c.Origen) + "/a.txt").Open())
+                Afirmar(ShaDe(st) == hashA, "a.txt sano dentro del .zip");
+
+            RepoSettings a = s.Repo.LeerAjustes();
+            a.ReplicaPath = "";
+            s.Repo.GuardarAjustes(a);
+            string sinReplica = Path.Combine(c.Destino, "sin_replica.zip");
+            bool fallo = false;
+            try { Exportar(s, m, sinReplica); } catch (RebithException) { fallo = true; }
+            Afirmar(fallo, "sin replica se detiene con un mensaje claro");
+            Afirmar(!File.Exists(sinReplica), "no quedo .zip con un archivo danado");
+            Afirmar(Temporales(c.Destino).Count == 0, "no quedan temporales");
+        }
+
+        private static void ExportarZipGuardas(Carpeta c)
+        {
+            for (int i = 0; i < 30; i++) c.Escribir("f" + i + ".txt", "dato " + i);
+            RebithService s = Servicio(c);
+            SnapshotManifest m = Respaldar(s, Objetivo(s, c));
+
+            bool dentro = false;
+            try { Exportar(s, m, Path.Combine(c.Deposito, "x.zip")); } catch (RebithException) { dentro = true; }
+            Afirmar(dentro, "no se permite guardar el .zip dentro del deposito");
+
+            string zip = Path.Combine(c.Destino, "existente.zip");
+            Directory.CreateDirectory(c.Destino);
+            File.WriteAllText(zip, "no tocar");
+            bool existe = false;
+            try { Exportar(s, m, zip); } catch (RebithException) { existe = true; }
+            Afirmar(existe && File.ReadAllText(zip) == "no tocar", "sin permiso para reemplazar no toca el archivo");
+            ResultadoExportacion r = Exportar(s, m, zip, true);
+            using (ZipArchive z = ZipFile.OpenRead(r.Archivo)) Afirmar(z.Entries.Count == 30, "reemplazado con las 30 entradas");
+
+            var cts = new CancellationTokenSource();
+            var progreso = new ProgresoSincrono(p => { if (p.Current == 10) cts.Cancel(); });
+            string cancelado = Path.Combine(c.Destino, "cancelado.zip");
+            bool seCancelo = false;
+            try { Exportar(s, m, cancelado, false, progreso, cts.Token); } catch (OperationCanceledException) { seCancelo = true; }
+            Afirmar(seCancelo, "se cancelo");
+            Afirmar(!File.Exists(cancelado) && Temporales(c.Destino).Count == 0, "cancelar no deja .zip ni temporales");
+            using (s.Repo.TomarCandado("despues de cancelar", "tester")) { }
+        }
+
+        private static void UsuariosApagados(Carpeta c)
+        {
+            RebithService s = Servicio(c);
+            Afirmar(!s.Repo.LeerAjustes().UsersEnabled, "deposito nuevo: sin usuarios");
+
+            // Un ajustes.json de antes de esta version no trae el campo: debe quedar sin usuarios.
+            string ruta = Path.Combine(s.Repo.CarpetaConfig, "ajustes.json");
+            File.WriteAllText(ruta, "{\"ReplicaPath\":\"\",\"AutoVerifyDays\":3,\"SessionTimeoutMinutes\":20}");
+            AtomicFile.BorrarSinError(ruta + ".bak");
+            RepoSettings viejo = s.Repo.LeerAjustes();
+            Afirmar(!viejo.UsersEnabled && viejo.AutoVerifyDays == 3 && viejo.SessionTimeoutMinutes == 20, "deposito viejo: sin usuarios y el resto se respeta");
+
+            viejo.UsersEnabled = true;
+            s.Repo.GuardarAjustes(viejo);
+            Afirmar(RebithService.Abrir(c.Deposito).Repo.LeerAjustes().UsersEnabled, "prenderlos se guarda en el deposito");
+        }
+
         private static void ImportarPython(Carpeta c)
         {
             string python = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "backup_manager"));

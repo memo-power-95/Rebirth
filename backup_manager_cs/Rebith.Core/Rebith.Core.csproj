@@ -10,5 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />
+    <!-- ZipArchive (exportar a .zip). Viene con .NET Framework: no es una DLL que haya que copiar. -->
+    <Reference Include="System.IO.Compression" />
   </ItemGroup>
 </Project>

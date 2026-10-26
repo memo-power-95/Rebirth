@@ -11,7 +11,9 @@ Hace lo mismo que la versión en Python, pero está reforzada para producción.
 3. No hay que instalar nada más: .NET Framework 4.8 ya viene en Windows 10/11, y no usa DLLs nativas.
 
 **Primer uso:**
-- **Usuario inicial:** `admin` / `admin123`. Pide cambiar la contraseña al entrar.
+- **No pide usuario:** quien abre Rebith puede hacer todo. La auditoría anota su usuario de Windows en cada acción.
+  - Si algún día hacen falta usuarios, se prenden en Configuración → Seguridad y espacio → "Pedir usuario y contraseña para hacer cambios".
+  - Para prenderlos hay que entrar con un administrador. El inicial es `admin` / `admin123` y pide cambiar la contraseña.
 - **Depósito predeterminado:** `D:\RebithRespaldos` si existe el disco D:. Si no, `C:\ProgramData\Rebith\Deposito`. Se cambia en Configuración.
 - **Respaldos viejos:** en Configuración → **Importar...**, elige el `backups.db` de la versión en Python (normalmente en `%LOCALAPPDATA%\rebith`).
 - **Respaldos con la ventana cerrada:** en Configuración → **Registrar**. Windows correrá `Rebith.exe /programado` cada 15 minutos.
@@ -22,7 +24,7 @@ Hace lo mismo que la versión en Python, pero está reforzada para producción.
 dotnet run --project Rebith.Tests
 ```
 
-Son 25 pruebas del motor: respaldo, restauración, corrupción, réplica, cancelación, candado, programador, usuarios, auditoría e importación desde Python. Usan el código Python real para crear la base que se importa. Necesitan el SDK de .NET 8; no se instalan en la línea.
+Son 29 pruebas del motor: respaldo, restauración, corrupción, réplica, cancelación, candado, programador, usuarios, auditoría, importación desde Python y exportación a .zip. Usan el código Python real para crear la base que se importa. Necesitan el SDK de .NET 8; no se instalan en la línea.
 
 ## Cómo está hecho por dentro
 
@@ -55,6 +57,38 @@ reportes\            reportes CSV de cada verificación
   - Si se restaura sobre la ubicación original, antes se hace un respaldo automático para poder volver atrás.
 - **La ventana nunca se congela:** las operaciones van en segundo plano, con progreso y Cancelar. Un error inesperado se anota en el log y la ventana sigue viva.
 
+## Exportar un respaldo a .zip
+
+En **Historial**, elija el respaldo y oprima **Exportar a .zip...** (pide el permiso de restaurar).
+Sirve para subir el programa completo a la nube o llevarlo a otra PC.
+
+- Es un .zip normal: se abre con Windows (clic derecho → Extraer todo), sin Rebith.
+- Adentro va la carpeta del programa con su nombre y las fechas originales de cada archivo, igual que "Enviar a → Carpeta comprimida".
+- **Nombre propuesto:** objetivo + fecha del respaldo, por ejemplo `Screw3_2026-10-26_1405.zip`.
+- **Nunca queda un .zip a medias:**
+  - Se arma en un temporal junto al destino y se publica al final.
+  - Cancelar, un disco lleno o un corte de luz no dejan nada con el nombre final.
+- **Cada archivo se comprueba con su huella SHA-256** al sacarlo del depósito.
+  - Si está dañado y la réplica lo tiene sano, se usa la réplica.
+  - Si no, se detiene: no se entrega un .zip con un archivo dañado.
+- Al terminar se **relee el .zip completo** y se compara cada archivo con el respaldo.
+- Antes de empezar revisa que haya espacio en el disco destino.
+- No se puede guardar dentro del depósito.
+- Queda en la auditoría.
+- Los archivos que el respaldo no pudo leer en su momento ("Ver no respaldados") no van en el .zip, y se avisa antes.
+
+## Respaldar con el programa abierto
+
+- **Se puede, y la mayoría de los archivos se respalda bien.** Rebith abre cada archivo sin bloquearlo y permite que el otro programa lo tenga abierto, incluso si lo está escribiendo.
+- **Si un archivo cambia mientras se lee** (un log que se está escribiendo):
+  - se reintenta 3 veces;
+  - si sigue cambiando, se omite y el respaldo queda "Con advertencias".
+- **Lo que no se puede leer:** archivos que el programa abrió en exclusiva (algunas bases de datos). Se omiten, se anotan con el motivo y el resto del respaldo sigue. Se ven en "Ver no respaldados".
+- **Para esos haría falta una instantánea de Windows (VSS):**
+  - copia el disco "congelado" en un instante, aunque los archivos estén bloqueados;
+  - requiere correr como administrador;
+  - todavía no está hecho.
+
 ## Verificación reforzada
 
 | Nivel | Qué hace |
@@ -68,7 +102,10 @@ reportes\            reportes CSV de cada verificación
 
 ## Diferencias con la versión en Python
 
-- **Permisos que sí se aplican.** Sin sesión solo se consulta. Cada acción pide el permiso correspondiente, y la sesión se cierra tras 15 minutos sin uso.
+- **Usuarios opcionales, apagados de fábrica.** Al prenderlos:
+  - sin sesión solo se consulta;
+  - cada acción pide el permiso correspondiente;
+  - la sesión se cierra tras 15 minutos sin uso.
 - **Contraseñas en PBKDF2 con sal.** Las de Python siguen sirviendo y se convierten al entrar.
 - **Un objetivo por carpeta.** Python creaba un objetivo nuevo en cada respaldo manual.
 - **Programación por objetivo** (diaria o semanal, a una hora fija) y retención automática ("conservar los últimos N").

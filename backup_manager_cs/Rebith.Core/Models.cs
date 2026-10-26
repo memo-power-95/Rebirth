@@ -168,6 +168,11 @@ namespace Rebith.Core
         [DataMember(Order = 5)] public int MinFreeSpaceMB { get; set; } = 1024;
         [DataMember(Order = 6)] public int SessionTimeoutMinutes { get; set; } = 15;
         [DataMember(Order = 7)] public bool LastAutoVerifyOk { get; set; } = true;
+        /// <summary>
+        /// true = pedir usuario y contrasena para hacer cambios. false (lo predeterminado) = quien
+        /// abre la ventana puede hacer todo y la auditoria anota su usuario de Windows.
+        /// </summary>
+        [DataMember(Order = 8)] public bool UsersEnabled { get; set; }
 
         // El serializador no ejecuta el constructor: si al archivo le falta un campo
         // (version vieja), estos son los valores que quedan.
@@ -181,6 +186,7 @@ namespace Rebith.Core
             MinFreeSpaceMB = 1024;
             SessionTimeoutMinutes = 15;
             LastAutoVerifyOk = true;
+            UsersEnabled = false;
         }
     }
 

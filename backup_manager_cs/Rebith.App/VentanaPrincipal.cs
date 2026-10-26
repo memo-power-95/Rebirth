@@ -249,7 +249,7 @@ namespace Rebith.App
             if (keyData == (Keys.Control | Keys.Alt | Keys.F))
             {
                 Navegar(Paginas.Administracion);
-                if (!Sesion.Activa) Sesion.Entrar(this, "Acceso especial: entre con un usuario administrador.");
+                if (!Sesion.Activa && !Sesion.SinUsuarios) Sesion.Entrar(this, "Acceso especial: entre con un usuario administrador.");
                 return true;
             }
             return base.ProcessCmdKey(ref msg, keyData);
@@ -275,6 +275,18 @@ namespace Rebith.App
 
         private void ActualizarSesion()
         {
+            bool sinUsuarios = Sesion.SinUsuarios;
+            Button menuAdministracion;
+            if (botonesMenu.TryGetValue(Paginas.Administracion, out menuAdministracion))
+                menuAdministracion.Text = "   " + (sinUsuarios ? "Auditoria" : "Usuarios y auditoria");
+            btnSesion.Visible = !sinUsuarios;
+            if (sinUsuarios)
+            {
+                // Sin usuarios no hay nada que entrar ni contrasena que cambiar.
+                lblUsuario.Text = "Usuario de Windows: " + Sesion.Nombre;
+                btnContrasena.Visible = false;
+                return;
+            }
             if (Sesion.Activa)
             {
                 lblUsuario.Text = Sesion.Nombre + " (" + Sesion.Usuario.Role + ")";

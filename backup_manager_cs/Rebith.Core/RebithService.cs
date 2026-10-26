@@ -372,6 +372,41 @@ namespace Rebith.Core
             }
         }
 
+        // ------------------------------------------------------------------ exportar a .zip
+
+        /// <summary>
+        /// Saca un respaldo completo a un .zip normal (para subirlo a la nube o llevarlo a otra PC).
+        /// Toma el candado para que una limpieza no borre contenido mientras se arma el .zip.
+        /// </summary>
+        public ResultadoExportacion ExportarZip(string snapshotId, string archivoZip, bool reemplazar, string usuario,
+            IProgress<ProgressInfo> progreso, CancellationToken cancelar)
+        {
+            SnapshotManifest m = Repo.BuscarRespaldo(snapshotId);
+            if (m == null) throw new RebithException("El respaldo ya no existe o esta danado.");
+            using (RepoLock candado = Repo.TomarCandado("Exportar " + m.TargetName + " a .zip", usuario))
+            {
+                ResultadoExportacion r;
+                try
+                {
+                    r = new ZipExporter(Repo, AlmacenReplica()).Exportar(candado, m, archivoZip, reemplazar, progreso, cancelar);
+                }
+                catch (OperationCanceledException)
+                {
+                    Auditoria.Registrar(usuario, "exportacion_zip_cancelada", m.Id + " (" + m.TargetName + ")");
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    Auditoria.Registrar(usuario, "exportacion_zip_fallida", m.Id + " -> " + archivoZip + ": " + ex.Message);
+                    throw;
+                }
+                Auditoria.Registrar(usuario, "exportacion_zip", string.Format("{0} ({1}) -> {2}: {3} archivos, {4}{5}",
+                    m.Id, m.TargetName, r.Archivo, r.Archivos, Tamanos.Legible(r.TamanoZip),
+                    r.DesdeReplica > 0 ? ", " + r.DesdeReplica + " desde la replica" : ""));
+                return r;
+            }
+        }
+
         // ------------------------------------------------------------------ verificar
 
         public ResultadoVerificacion CompararConOrigen(string snapshotId, bool exacta, string usuario,

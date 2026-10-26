@@ -21,6 +21,7 @@ namespace Rebith.App
         private readonly Label lblRevision = new Label { AutoSize = true, Font = Tema.Chica, ForeColor = Tema.TextoSuave, MaximumSize = new Size(Tema.S(760), 0) };
         private readonly NumericUpDown numEspacio = new NumericUpDown { Minimum = 0, Maximum = 1000000, Increment = 512, Width = Tema.S(100) };
         private readonly NumericUpDown numSesion = new NumericUpDown { Minimum = 1, Maximum = 240, Width = Tema.S(70) };
+        private readonly CheckBox chkUsuarios = new CheckBox { AutoSize = true, Text = "Pedir usuario y contrasena para hacer cambios", Margin = new Padding(0, Tema.S(8), 0, 0) };
         private readonly Label lblTarea = new Label { AutoSize = true, Font = Tema.Chica, ForeColor = Tema.TextoSuave };
 
         public PaginaConfiguracion(VentanaPrincipal v) : base(v)
@@ -47,9 +48,11 @@ namespace Rebith.App
             Agregar(revision, lblRevision);
             columna.Controls.Add(revision);
 
-            Tarjeta seguridad = Seccion("Seguridad y espacio", null);
+            Tarjeta seguridad = Seccion("Seguridad y espacio", "Usuarios apagados (lo normal): quien abre Rebith puede respaldar, restaurar, borrar y configurar sin entrar, y la auditoria anota su usuario de Windows. Prendidos: sin sesion solo se consulta.");
             Agregar(seguridad, Fila(Tema.Etiqueta("No respaldar si quedan menos de"), numEspacio, Tema.Etiqueta("MB libres")));
+            Agregar(seguridad, chkUsuarios);
             Agregar(seguridad, Fila(Tema.Etiqueta("Cerrar la sesion tras"), numSesion, Tema.Etiqueta("minutos sin uso")));
+            chkUsuarios.CheckedChanged += (s, e) => numSesion.Enabled = chkUsuarios.Checked;
             Agregar(seguridad, Fila(Tema.Boton("Guardar", (s, e) => GuardarAjustes(), true)));
             columna.Controls.Add(seguridad);
 
@@ -123,23 +126,55 @@ namespace Rebith.App
             lblRevision.ForeColor = a.LastAutoVerifyOk ? Tema.TextoSuave : Tema.Mal;
             numEspacio.Value = Math.Max(0, Math.Min(1000000, a.MinFreeSpaceMB));
             numSesion.Value = Math.Max(1, Math.Min(240, a.SessionTimeoutMinutes));
+            chkUsuarios.Checked = a.UsersEnabled;
+            numSesion.Enabled = a.UsersEnabled;
             lblTarea.Text = EstadoTarea();
         }
 
         private void GuardarAjustes()
         {
             if (!Sesion.Exigir(this, Permiso.GestionarSeguridad, "cambiar la configuracion")) return;
+            bool antes = !Sesion.SinUsuarios;
+            bool despues = chkUsuarios.Checked;
+            if (despues && !antes && !ConfirmarPrenderUsuarios())
+            {
+                chkUsuarios.Checked = false;
+                return;
+            }
+            if (!despues && antes && !Confirmar("Se van a dejar de pedir usuarios: quien abra Rebith podra respaldar, restaurar, borrar y cambiar la configuracion sin entrar." +
+                    "\nLa auditoria anotara el usuario de Windows.\n\nContinuar?", "Quitar usuarios"))
+            {
+                chkUsuarios.Checked = true;
+                return;
+            }
             Seguro(() =>
             {
                 RepoSettings a = Servicio.Repo.LeerAjustes();
                 a.AutoVerifyDays = (int)numDias.Value;
                 a.MinFreeSpaceMB = (int)numEspacio.Value;
                 a.SessionTimeoutMinutes = (int)numSesion.Value;
+                a.UsersEnabled = despues;
                 Servicio.Repo.GuardarAjustes(a);
-                Servicio.Auditoria.Registrar(Sesion.ParaAuditoria, "ajustes", string.Format("revision cada {0} dias, minimo {1} MB, sesion {2} min", a.AutoVerifyDays, a.MinFreeSpaceMB, a.SessionTimeoutMinutes));
-                Info("Configuracion guardada.");
+                Servicio.Auditoria.Registrar(Sesion.ParaAuditoria, "ajustes", string.Format("revision cada {0} dias, minimo {1} MB, sesion {2} min, usuarios {3}",
+                    a.AutoVerifyDays, a.MinFreeSpaceMB, a.SessionTimeoutMinutes, a.UsersEnabled ? "prendidos" : "apagados"));
+                if (antes && !despues) Sesion.Salir("usuarios apagados");
+                if (antes != despues) Sesion.AvisarCambio();
+                Info(antes == despues ? "Configuracion guardada." :
+                    despues ? "Configuracion guardada. Desde ahora se pide usuario y contrasena para hacer cambios." :
+                    "Configuracion guardada. Desde ahora no se piden usuarios.");
                 AlRefrescar();
             });
+        }
+
+        private bool ConfirmarPrenderUsuarios()
+        {
+            if (!Confirmar("Se va a pedir usuario y contrasena para respaldar, restaurar, borrar y configurar. Sin sesion solo se podra consultar." +
+                    "\n\nPara confirmar, entre ahora con un usuario administrador (el inicial es admin / admin123, y pide cambiarla)." +
+                    "\n\nContinuar?", "Pedir usuarios"))
+                return false;
+            if (Sesion.EntrarComoAdministrador(this)) return true;
+            Aviso("No se prendieron los usuarios: hace falta entrar con un usuario que pueda cambiar la configuracion.");
+            return false;
         }
 
         private void ElegirReplica()

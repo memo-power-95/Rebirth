@@ -14,6 +14,9 @@ namespace Rebith.App
         private readonly Banner cadena = new Banner();
         private readonly Label bloqueo = new Label { Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleCenter, Font = Tema.Subtitulo, ForeColor = Tema.TextoSuave };
         private readonly Panel contenidoProtegido = new Panel { Dock = DockStyle.Fill };
+        private readonly TabControl tabs = new TabControl { Dock = DockStyle.Fill, Font = Tema.Normal, Padding = new Point(Tema.S(14), Tema.S(6)) };
+        private readonly TabPage tabUsuarios = new TabPage("Usuarios y permisos") { BackColor = Tema.Fondo, Padding = new Padding(Tema.S(10)) };
+        private readonly Label encabezado = Tema.EncabezadoPagina("Usuarios y auditoria");
 
         public PaginaAdministracion(VentanaPrincipal v) : base(v)
         {
@@ -28,7 +31,6 @@ namespace Rebith.App
             botonesUsuarios.Controls.Add(Tema.Boton("+ Nuevo usuario", (s, e) => Nuevo(), true));
             botonesUsuarios.Controls.Add(Tema.Boton("Editar", (s, e) => Editar()));
             botonesUsuarios.Controls.Add(Tema.BotonPeligro("Eliminar", (s, e) => Eliminar()));
-            var tabUsuarios = new TabPage("Usuarios y permisos") { BackColor = Tema.Fondo, Padding = new Padding(Tema.S(10)) };
             tabUsuarios.Controls.Add(gridUsuarios);
             tabUsuarios.Controls.Add(botonesUsuarios);
 
@@ -40,18 +42,23 @@ namespace Rebith.App
             tabAuditoria.Controls.Add(cadena);
             tabAuditoria.Controls.Add(botonesAuditoria);
 
-            var tabs = new TabControl { Dock = DockStyle.Fill, Font = Tema.Normal, Padding = new Point(Tema.S(14), Tema.S(6)) };
             tabs.TabPages.Add(tabUsuarios);
             tabs.TabPages.Add(tabAuditoria);
             contenidoProtegido.Controls.Add(tabs);
 
             Controls.Add(contenidoProtegido);
             Controls.Add(bloqueo);
-            Controls.Add(Tema.EncabezadoPagina("Usuarios y auditoria"));
+            Controls.Add(encabezado);
         }
 
         protected override void AlRefrescar()
         {
+            // Sin usuarios no hay nada que administrar: solo se ve la auditoria.
+            bool sinUsuarios = Sesion.SinUsuarios;
+            encabezado.Text = sinUsuarios ? "Auditoria" : "Usuarios y auditoria";
+            if (sinUsuarios && tabs.TabPages.Contains(tabUsuarios)) tabs.TabPages.Remove(tabUsuarios);
+            if (!sinUsuarios && !tabs.TabPages.Contains(tabUsuarios)) tabs.TabPages.Insert(0, tabUsuarios);
+
             bool puedeUsuarios = Sesion.Tiene(Permiso.GestionarUsuarios);
             bool puedeSeguridad = Sesion.Tiene(Permiso.GestionarSeguridad);
             if (!puedeUsuarios && !puedeSeguridad)

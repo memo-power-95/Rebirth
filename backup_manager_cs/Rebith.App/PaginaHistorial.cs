@@ -52,6 +52,7 @@ namespace Rebith.App
             botonesRespaldo.Dock = DockStyle.Bottom;
             botonesRespaldo.Controls.Add(Tema.Boton("Restaurar todo en otra carpeta...", (s, e) => Restaurar(false, false), true));
             botonesRespaldo.Controls.Add(Tema.Boton("Restaurar en su ubicacion original...", (s, e) => Restaurar(true, false)));
+            botonesRespaldo.Controls.Add(Tema.Boton("Exportar a .zip...", (s, e) => ExportarZip()));
             botonesRespaldo.Controls.Add(Tema.Boton("Ver no respaldados", (s, e) => VerOmitidos()));
             botonesRespaldo.Controls.Add(Tema.Boton("Conservar ultimos...", (s, e) => ConservarUltimos()));
             botonesRespaldo.Controls.Add(Tema.BotonPeligro("Borrar respaldo", (s, e) => Borrar()));
@@ -253,6 +254,66 @@ namespace Rebith.App
                 using (var d = new DialogoLista("Resultado de la restauracion", bien ? "Restauracion correcta" : "Restauracion con fallos", lineas, bien ? Tema.Bien : Tema.Mal))
                     d.ShowDialog(this);
             });
+        }
+
+        /// <summary>
+        /// Guarda el respaldo seleccionado como un .zip normal (se abre con Windows sin Rebith),
+        /// para subirlo a la nube o llevarlo a otra PC.
+        /// </summary>
+        private void ExportarZip()
+        {
+            SnapshotManifest m = seleccionado;
+            if (m == null)
+            {
+                Aviso("Elija un respaldo de la lista.");
+                return;
+            }
+            if (!Sesion.Exigir(this, Permiso.Restaurar, "exportar respaldos")) return;
+            if (m.Skipped.Count > 0 && !Confirmar("Este respaldo tiene " + m.Skipped.Count + " archivo(s) que no se pudieron respaldar en su momento" +
+                    " (vea \"Ver no respaldados\"). Esos no van en el .zip.\n\nContinuar?", "Respaldo con advertencias"))
+                return;
+
+            string archivo;
+            using (var d = new SaveFileDialog
+            {
+                Title = "Guardar el respaldo como .zip",
+                Filter = "Archivo .zip (*.zip)|*.zip",
+                DefaultExt = "zip",
+                AddExtension = true,
+                OverwritePrompt = true,
+                FileName = NombreZip(m)
+            })
+            {
+                if (d.ShowDialog(this) != DialogResult.OK) return;
+                archivo = d.FileName;
+            }
+
+            string usuario = Sesion.ParaAuditoria;
+            // Windows ya pregunto si se reemplaza un .zip que exista (OverwritePrompt).
+            Ventana.Ejecutar("Exportando " + m.TargetName + " a .zip", (p, c) => Servicio.ExportarZip(m.Id, archivo, true, usuario, p, c), r =>
+            {
+                var lineas = new List<string>
+                {
+                    "Archivo: " + r.Archivo,
+                    "Archivos dentro: " + r.Archivos,
+                    "Tamano original: " + Tamanos.Legible(r.BytesOriginales),
+                    "Tamano del .zip: " + Tamanos.Legible(r.TamanoZip),
+                    "Se releyo el .zip completo y cada archivo coincide con su huella SHA-256.",
+                    "Se abre con Windows (clic derecho > Extraer todo), sin Rebith."
+                };
+                if (r.DesdeReplica > 0) lineas.Add(r.DesdeReplica + " archivo(s) se tomaron de la replica porque en el deposito principal estaban danados.");
+                if (r.OmitidosEnRespaldo > 0) lineas.Add("No van en el .zip " + r.OmitidosEnRespaldo + " archivo(s) que el respaldo no pudo leer en su momento.");
+                using (var d = new DialogoLista("Exportar a .zip", "Exportacion correcta", lineas, r.OmitidosEnRespaldo > 0 ? Tema.Aviso : Tema.Bien))
+                    d.ShowDialog(this);
+            });
+        }
+
+        /// <summary>Nombre propuesto: objetivo + fecha del respaldo, por ejemplo Screw3_2026-10-26_1405.zip.</summary>
+        private static string NombreZip(SnapshotManifest m)
+        {
+            DateTime? fecha = Tiempo.Leer(m.StartedLocal);
+            string cuando = fecha.HasValue ? fecha.Value.ToString("yyyy-MM-dd_HHmm", System.Globalization.CultureInfo.InvariantCulture) : m.Id;
+            return LimpiarNombre(m.TargetName) + "_" + cuando + ".zip";
         }
 
         private static string LimpiarNombre(string nombre)
